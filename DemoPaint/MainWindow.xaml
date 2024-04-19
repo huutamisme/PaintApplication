@@ -5,26 +5,741 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DemoPaint"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
-    <DockPanel LastChildFill="True">
-        <StackPanel Name="actions" DockPanel.Dock="Top" Orientation="Horizontal" Height="40" Background="Black">
-        </StackPanel>
-        <Grid>
-            <Canvas x:Name="myCanvas">
-            </Canvas>
-            <Canvas Background="Transparent" 
-         MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
-         MouseMove="Canvas_MouseMove" 
-         MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
-            </Canvas>
+        xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        WindowStartupLocation="CenterScreen" WindowStyle="None"
+        Loaded="Window_Loaded"
+        Title="Paint" Background="#202020" AllowsTransparency="True">
+    <Window.Resources>
+        <Style x:Key="MenuItemCustomStyle" TargetType="MenuItem">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="menuItemBorder" Background="Transparent" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding Tag}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="menuItemBorder" Property="Background" Value="#272727"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="menuItemStyle" TargetType="MenuItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+        <Style x:Key="MenuBarBtnCustom" TargetType="Button">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#272727"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ColorBtn" TargetType="Button">
+            <Setter Property="Margin" Value="0 5 5 0"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border Background="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" CornerRadius="25" Width="15" Height="15" BorderThickness="1" BorderBrush="#4C4C4C">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Ellipse x:Name="hoverEllipse" Stroke="White" StrokeThickness="1" Opacity="0" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="hoverEllipse" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ChosenColorBtn" TargetType="Button">
+            <Setter Property="Margin" Value="0 -15 5 5"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border Background="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" CornerRadius="25" Width="35" Height="35" BorderThickness="1" BorderBrush="#4C4C4C">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Ellipse x:Name="hoverEllipse" Stroke="White" StrokeThickness="1" Opacity="0" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="hoverEllipse" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolbarLayerBtn" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="colorBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="colorBtnBorder" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="colorBtnBorder" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnLine" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="HorizontalLine" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnRectangle" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="RectangleOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnEllipse" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="EllipseOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnStar" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="StarOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnArrowUp" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="ArrowUpBoldOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnArrowDown" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="ArrowDownBoldOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnArrowLeft" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="ArrowLeftBoldOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ShapeBtnArrowRight" TargetType="Button">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 5 5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="ArrowRightBoldOutline" Foreground="White" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolbarMenuItem" TargetType="MenuItem">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" HorizontalAlignment="Left" Width="20" Height="20"/>
+                                <materialDesign:PackIcon Kind="KeyboardArrowDown" HorizontalAlignment="Right"  Width="20" Height="20"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Border"
+                                Background="#303030"
+                                Padding="5">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#3C3C3C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" x:Name="CustomTitleBar" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Image Source="Images/logo_paint.png" Width="55" Height="55" Margin="-13 -13 0 0"/>
+                <Label Content="Untitled - Paint" Foreground="White" Margin="-20,0,0,0"/>
+            </StackPanel>
+
+            <!--<StackPanel Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">
+                <Button x:Name="btnClose"
+                    Style="{StaticResource controlButton}"
+                    Tag="{StaticResource color4}">
+                    <fa:IconImage Icon="Xmark" Style="{StaticResource controlButtonIcon}"/>
+                </Button>
+
+                <Button x:Name="btnMaximize"
+                    Style="{StaticResource controlButton}"
+                    Tag="{StaticResource color6}">
+                    <fa:IconImage Icon="Square" Style="{StaticResource controlButtonIcon}"/>
+                </Button>
+
+                <Button x:Name="btnMinimize"
+                    Style="{StaticResource controlButton}"
+                    Tag="{StaticResource color8}">
+                    <fa:IconImage Icon="WindowMinimize" Width="12" Style="{StaticResource controlButtonIcon}"/>
+                </Button>
+            </StackPanel>-->
         </Grid>
-       
-    </DockPanel>
-    
-        <!--<Line X1="10" Y1="10" X2="50" Y2="50" StrokeThickness="2" Stroke="Red"/>
-        <Ellipse Width="80" Height="100" StrokeThickness="2" Stroke="Blue" 
-                 Canvas.Left="87" Canvas.Top="10"/>
-        <Rectangle Width="100" Height="100" StrokeThickness="2" Stroke="Green" 
-                   Canvas.Left="209" Canvas.Top="20"/>-->
-    
+
+        <Grid Grid.Row="1" x:Name="MenuBar" Background="Transparent" Margin="6 9 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Background="Transparent" VerticalAlignment="Center">
+                <Menu Background="Transparent" Margin="0 0 15 0">
+                    <MenuItem x:Name="fileMenuItem" Tag="File" Style="{StaticResource MenuItemCustomStyle}" Click="MenuItem_Click">
+                        <MenuItem.ContextMenu>
+                            <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=fileMenuItem}" HorizontalOffset="5" VerticalOffset="70">
+                                <MenuItem Header="New" InputGestureText="Ctrl+N" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="FilePlus"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Open" InputGestureText="Ctrl+O" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="FolderOpen"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Save" InputGestureText="Ctrl+S" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ContentSave"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </MenuItem.ContextMenu>
+                    </MenuItem>
+                </Menu>
+                <Menu Background="Transparent" Margin="0 0 15 0">
+                    <MenuItem x:Name="editMenuItem" Tag="Edit" Style="{StaticResource MenuItemCustomStyle}" Click="MenuItem_Click">
+                        <MenuItem.ContextMenu>
+                            <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=editMenuItem}" HorizontalOffset="60" VerticalOffset="70">
+                                <MenuItem Header="Cut" InputGestureText="Ctrl+X" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Scissors"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Copy" InputGestureText="Ctrl+C" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ContentCopy"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Paste" InputGestureText="Ctrl+V" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="ContentPaste"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </MenuItem.ContextMenu>
+                    </MenuItem>
+                </Menu>
+                <Menu Background="Transparent" Margin="0 0 15 0">
+                    <MenuItem x:Name="viewMenuItem" Tag="View" Style="{StaticResource MenuItemCustomStyle}" Click="MenuItem_Click">
+                        <MenuItem.ContextMenu>
+                            <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=viewMenuItem}" HorizontalOffset="115" VerticalOffset="70">
+                                <MenuItem Header="Ruler" InputGestureText="Ctrl+R" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Ruler"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Gridlines" InputGestureText="Ctrl+G" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Grid"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Full screen" InputGestureText="F11" Style="{StaticResource menuItemStyle}">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Kind="Fullscreen"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </MenuItem.ContextMenu>
+                    </MenuItem>
+                </Menu>
+            </StackPanel>
+            <GridSplitter Grid.Column="1" Width="1" Height="20" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+            <Button Grid.Column="2" Style="{StaticResource MenuBarBtnCustom}" Tag="ContentSave"/>
+            <GridSplitter Grid.Column="3" Width="1" Height="20" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Background="Transparent">
+                <Button Style="{StaticResource MenuBarBtnCustom}" Tag="Undo"/>
+                <Button Style="{StaticResource MenuBarBtnCustom}" Tag="Redo"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2" x:Name="ToolBar"  Background="#272727" Height="120">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="70*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <Button Style="{StaticResource ToolbarLayerBtn}" Tag="select" Foreground="White"/>
+                <Label Grid.Row="1" Content="Selection" Foreground="White" HorizontalAlignment="Center"/>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Width="1" Height="110" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+
+            <Grid Grid.Column="2" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="70*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Button Style="{StaticResource ToolbarLayerBtn}" Tag="Pencil" Foreground="{StaticResource color6}"/>
+                    <Button Style="{StaticResource ToolbarLayerBtn}" Tag="Eraser" Foreground="{StaticResource color1}"/>
+                    <Popup x:Name="textFormattingPopup" PlacementTarget="{Binding ElementName=ToolBar}" IsOpen="False">
+                        <Border Background="Black" BorderBrush="Transparent" BorderThickness="0" CornerRadius="5" Height="40">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox Grid.Column="0" x:Name="FontStyleCombobox" Width="150" Margin="5" Height="20" Foreground="Black"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
+                                    <ComboBoxItem Content="Arial" FontFamily="Arial"/>
+                                    <ComboBoxItem Content="Times New Roman" FontFamily="Times New Roman"/>
+                                    <ComboBoxItem Content="Verdana" FontFamily="Verdana"/>
+                                    <ComboBoxItem Content="Calibri" FontFamily="Calibri"/>
+                                </ComboBox>
+                                <ComboBox Grid.Column="1" x:Name="FontSizeCombobox" Width="50" Height="20" Foreground="Black"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
+                                    <ComboBoxItem Content="8"/>
+                                    <ComboBoxItem Content="9"/>
+                                    <ComboBoxItem Content="10"/>
+                                    <ComboBoxItem Content="11"/>
+                                    <ComboBoxItem Content="12"/>
+                                    <ComboBoxItem Content="14"/>
+                                    <ComboBoxItem Content="16"/>
+                                    <ComboBoxItem Content="18"/>
+                                    <ComboBoxItem Content="20"/>
+                                    <ComboBoxItem Content="22"/>
+                                    <ComboBoxItem Content="24"/>
+                                    <ComboBoxItem Content="26"/>
+                                    <ComboBoxItem Content="28"/>
+                                    <ComboBoxItem Content="36"/>
+                                    <ComboBoxItem Content="48"/>
+                                    <ComboBoxItem Content="72"/>
+                                </ComboBox>
+                                <GridSplitter Grid.Column="2" Width="1" Height="20" Background="Gray" VerticalAlignment="Center" Opacity="0.3" Margin="10 0 0 0"/>
+                                <CheckBox Grid.Column="3" x:Name="BackgrounFillCheckBox" Content="Background Fill" Foreground="White" BorderBrush="White" BorderThickness="1" VerticalAlignment="Center" Margin="10 0 10 0"/>
+                            </Grid>
+                        </Border>
+                    </Popup>
+                    <Button Style="{StaticResource ToolbarLayerBtn}" Tag="abc" Foreground="White" Click="Text_Formatting_Click"/>
+                </StackPanel>
+                <Label Grid.Row="1" Content="Tools" Foreground="White" HorizontalAlignment="Center"/>
+            </Grid>
+
+            <GridSplitter Grid.Column="3" Width="1" Height="110" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+
+            <Grid Grid.Column="4" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="70*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <Border Grid.Row="0" CornerRadius="5" BorderBrush="Gray" BorderThickness="0.3" Margin="10 0">
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel x:Name="ShapeButtons1" Orientation="Horizontal">
+                            </StackPanel>
+                            <StackPanel x:Name="ShapeButtons2" Orientation="Horizontal">
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Vertical">
+                        <Menu Background="Transparent" Margin="0 0 15 10">
+                            <MenuItem Style="{StaticResource ToolbarMenuItem}" Tag="SquareEditOutline" Click="MenuItem_Click">
+                                <MenuItem.ContextMenu>
+                                    <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=fileMenuItem}" HorizontalOffset="440" VerticalOffset="115">
+                                        <MenuItem>
+                                            <MenuItem.Icon>
+                                                <TextBlock Text="1px" FontSize="10"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem>
+                                            <MenuItem.Icon>
+                                                <TextBlock Text="8px" FontSize="10"/>
+                                            </MenuItem.Icon>
+                                            <MenuItem.Header>
+                                                <materialDesign:PackIcon Kind="HorizontalLine" Width="50" Height="50"/>
+                                            </MenuItem.Header>
+                                        </MenuItem>
+                                        <MenuItem Header="Save" InputGestureText="Ctrl+S">
+                                            <MenuItem.Icon>
+                                                <materialDesign:PackIcon Kind="ContentSave"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                    </ContextMenu>
+                                </MenuItem.ContextMenu>
+                            </MenuItem>
+                        </Menu>
+                        <Menu Background="Transparent" Margin="0 0 15 0">
+                            <MenuItem Style="{StaticResource ToolbarMenuItem}" Tag="FormatLineWeight" Click="MenuItem_Click">
+                                <MenuItem.ContextMenu>
+                                    <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=fileMenuItem}" HorizontalOffset="440" VerticalOffset="155">
+                                        <MenuItem Header="New" InputGestureText="Ctrl+N">
+                                            <MenuItem.Icon>
+                                                <materialDesign:PackIcon Kind="FilePlus"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Open" InputGestureText="Ctrl+O">
+                                            <MenuItem.Icon>
+                                                <materialDesign:PackIcon Kind="FolderOpen"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="Save" InputGestureText="Ctrl+S">
+                                            <MenuItem.Icon>
+                                                <materialDesign:PackIcon Kind="ContentSave"/>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                    </ContextMenu>
+                                </MenuItem.ContextMenu>
+                            </MenuItem>
+                        </Menu>
+                    </StackPanel>
+                </StackPanel>
+
+                <Label Grid.Row="1" Content="Shapes" Foreground="White" HorizontalAlignment="Center"/>
+            </Grid>
+
+            <GridSplitter Grid.Column="5" Width="1" Height="110" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+
+            <Grid Grid.Column="6" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="70*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Button Style="{StaticResource ChosenColorBtn}" Tag="{Binding ChosenColor}"/>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource BlackBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource DarkGrayBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource DarkRedBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource CrimsonBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource OrangeBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource YellowBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource GreenBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource BlueBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource DarkBlueBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource PurpleBrush}" Click="ColorButton_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource WhiteBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource LightGrayBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource BrownBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource PinkBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource YellowGreenBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource LightYellowBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource LimeBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource LightBlueBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource SkyBlueBrush}" Click="ColorButton_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource LavenderBrush}" Click="ColorButton_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+                <Label Grid.Row="1" Content="Colors" Foreground="White" HorizontalAlignment="Center"/>
+            </Grid>
+
+            <GridSplitter Grid.Column="7" Width="1" Height="110" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+
+            <Grid Grid.Column="8" Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="70*"/>
+                    <RowDefinition Height="30*"/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="0" Style="{StaticResource ToolbarLayerBtn}" Tag="LayersTripleOutline" Foreground="{StaticResource color3}"/>
+                <Label Grid.Row="1" Content="Layers" Foreground="White" HorizontalAlignment="Center"/>
+            </Grid>
+
+            <!--<materialDesign:PackIcon Kind="HorizontalLine" Foreground="White" Width="70" Height="10"/>-->
+        </Grid>
+
+        <Canvas Grid.Row="3" x:Name="myCanvas"  
+                MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                MouseMove="Canvas_MouseMove" 
+                MouseLeftButtonUp="Canvas_MouseLeftButtonUp" Background="White"/>
+    </Grid>
 </Window>

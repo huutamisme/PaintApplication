@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Ink;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -23,6 +26,9 @@ namespace DemoPaint
         public MainWindow()
         {
             InitializeComponent();
+            SetWindowSizeToScreenSize();
+
+            DataContext = this;
         }
 
         bool _isDrawing = false;
@@ -56,22 +62,46 @@ namespace DemoPaint
             // ---------------------------------------------------
 
             // Tự tạo ra giao diện
+            int count = 0;
             foreach (var item in _prototypes)
             {
-                var control = new Button()
+                var control = new Button();
+
+                switch (item.Name)
                 {
-                    Width = 80,
-                    Height = 35,
-                    Content = item.Name, 
-                    Tag = item,
-                };
+                    case "Line":
+                        control.Style = FindResource("ShapeBtnLine") as Style;
+                        break;
+
+                    case "Rectangle":
+                        control.Style = FindResource("ShapeBtnRectangle") as Style;
+                        break;
+
+                    case "Ellipse":
+                        control.Style = FindResource("ShapeBtnEllipse") as Style;
+                        break;
+                }
+
+                control.Tag = item;
                 control.Click += Control_Click;
-                actions.Children.Add(control);
+
+                if (count < 4)
+                {
+                    ShapeButtons1.Children.Add(control);
+                }
+                else
+                {
+                    ShapeButtons2.Children.Add(control);
+                }
+
+                count++;
             }
+
             _painter = _prototypes[0];
         }
         private void Control_Click(object sender, RoutedEventArgs e)  {
             IShape item = (IShape)(sender as Button)!.Tag;
+            Debug.WriteLine("item: " + item);
             _painter = item; 
         }
 
@@ -83,6 +113,7 @@ namespace DemoPaint
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
+            Debug.WriteLine("huhuhu: " + _isDrawing);
             if (_isDrawing)
             {
                 _end = e.GetPosition(myCanvas);
@@ -91,7 +122,6 @@ namespace DemoPaint
                 {
                     myCanvas.Children.Add(item.Convert());
                 }
-
                 _painter.AddFirst(_start);
                 _painter.AddSecond(_end);
                 myCanvas.Children.Add(_painter.Convert());
@@ -101,10 +131,82 @@ namespace DemoPaint
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _isDrawing = false;
-            _painters.Add((IShape)_painter.Clone());                        
+            _painters.Add((IShape)_painter.Clone());
         }
 
         IShape _painter = null;
-       
+
+
+        private void SetWindowSizeToScreenSize()
+        {
+            // Set Window size according to actual Screen size
+            Width = SystemParameters.WorkArea.Width;
+            Height = SystemParameters.WorkArea.Height;
+        }
+
+        //private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    WindowInteropHelper helper = new WindowInteropHelper(this);
+        //    SendMessage(helper.Handle, 161, 2, 0);
+        //}
+
+        //[DllImport("user32.dll")]
+        //public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+
+        //private void pnlControlBar_MouseEnter(object sender, MouseEventArgs e)
+        //{
+        //    this.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
+        //}
+
+        //private void btnClose_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Application.Current.Shutdown();
+        //}
+        //private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        //{
+        //    this.WindowState = WindowState.Minimized;
+        //}
+        //private void btnMaximize_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (this.WindowState == WindowState.Normal)
+        //        this.WindowState = WindowState.Maximized;
+        //    else this.WindowState = WindowState.Normal;
+        //}
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            if (menuItem != null && menuItem.ContextMenu != null)
+            {
+                menuItem.ContextMenu.IsOpen = true;
+            }
+        }
+
+        private void Text_Formatting_Click(object sender, RoutedEventArgs e)
+        {
+            textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
+        }
+
+        public static readonly DependencyProperty ChosenColorProperty =
+        DependencyProperty.Register("ChosenColor", typeof(Brush), typeof(MainWindow), new PropertyMetadata(null));
+
+        public Brush ChosenColor
+        {
+            get { return (Brush)GetValue(ChosenColorProperty); }
+            set { SetValue(ChosenColorProperty, value); }
+        }
+
+        private void ColorButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button != null)
+            {
+                Brush selectedColor = button.Tag as Brush;
+                if (selectedColor != null)
+                {
+                    ChosenColor = selectedColor;
+                }
+            }
+        }
     }
 }
