@@ -417,25 +417,29 @@
                 <Label Content="Untitled - Paint" Foreground="White" Margin="-20,0,0,0"/>
             </StackPanel>
 
-            <!--<StackPanel Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">
                 <Button x:Name="btnClose"
-                    Style="{StaticResource controlButton}"
-                    Tag="{StaticResource color4}">
+                        Style="{StaticResource controlButton}"
+                        Tag="{StaticResource color4}"
+                        Click="btnClose_Click">
                     <fa:IconImage Icon="Xmark" Style="{StaticResource controlButtonIcon}"/>
+                    
                 </Button>
 
                 <Button x:Name="btnMaximize"
                     Style="{StaticResource controlButton}"
-                    Tag="{StaticResource color6}">
+                    Tag="{StaticResource color6}"
+                        Click="btnMaximize_Click">
                     <fa:IconImage Icon="Square" Style="{StaticResource controlButtonIcon}"/>
                 </Button>
 
                 <Button x:Name="btnMinimize"
                     Style="{StaticResource controlButton}"
-                    Tag="{StaticResource color8}">
+                    Tag="{StaticResource color8}"
+                        Click="btnMinimize_Click">
                     <fa:IconImage Icon="WindowMinimize" Width="12" Style="{StaticResource controlButtonIcon}"/>
                 </Button>
-            </StackPanel>-->
+            </StackPanel>
         </Grid>
 
         <Grid Grid.Row="1" x:Name="MenuBar" Background="Transparent" Margin="6 9 0 0">
@@ -737,9 +741,14 @@
             <!--<materialDesign:PackIcon Kind="HorizontalLine" Foreground="White" Width="70" Height="10"/>-->
         </Grid>
 
-        <Canvas Grid.Row="3" x:Name="myCanvas"  
-                MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
-                MouseMove="Canvas_MouseMove" 
-                MouseLeftButtonUp="Canvas_MouseLeftButtonUp" Background="White"/>
+        <Grid Grid.Row="3">
+            <Canvas x:Name="myCanvas" Background="White">
+            </Canvas>
+            <Canvas Background="Transparent" 
+                    MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                    MouseMove="Canvas_MouseMove" 
+                    MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
+            </Canvas>
+        </Grid>
     </Grid>
 </Window>

@@ -101,7 +101,6 @@ namespace DemoPaint
         }
         private void Control_Click(object sender, RoutedEventArgs e)  {
             IShape item = (IShape)(sender as Button)!.Tag;
-            Debug.WriteLine("item: " + item);
             _painter = item; 
         }
 
@@ -113,7 +112,6 @@ namespace DemoPaint
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            Debug.WriteLine("huhuhu: " + _isDrawing);
             if (_isDrawing)
             {
                 _end = e.GetPosition(myCanvas);
@@ -144,34 +142,34 @@ namespace DemoPaint
             Height = SystemParameters.WorkArea.Height;
         }
 
-        //private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        //{
-        //    WindowInteropHelper helper = new WindowInteropHelper(this);
-        //    SendMessage(helper.Handle, 161, 2, 0);
-        //}
+        private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            WindowInteropHelper helper = new WindowInteropHelper(this);
+            SendMessage(helper.Handle, 161, 2, 0);
+        }
 
-        //[DllImport("user32.dll")]
-        //public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
 
-        //private void pnlControlBar_MouseEnter(object sender, MouseEventArgs e)
-        //{
-        //    this.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
-        //}
+        private void pnlControlBar_MouseEnter(object sender, MouseEventArgs e)
+        {
+            this.MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
+        }
 
-        //private void btnClose_Click(object sender, RoutedEventArgs e)
-        //{
-        //    Application.Current.Shutdown();
-        //}
-        //private void btnMinimize_Click(object sender, RoutedEventArgs e)
-        //{
-        //    this.WindowState = WindowState.Minimized;
-        //}
-        //private void btnMaximize_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (this.WindowState == WindowState.Normal)
-        //        this.WindowState = WindowState.Maximized;
-        //    else this.WindowState = WindowState.Normal;
-        //}
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+        private void btnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Normal)
+                this.WindowState = WindowState.Maximized;
+            else this.WindowState = WindowState.Normal;
+        }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
