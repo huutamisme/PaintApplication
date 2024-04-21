@@ -10,7 +10,8 @@ namespace MyLine
     {
         private Point _start;
         private Point _end;
-
+        private SolidColorBrush _brush;
+        private int _strokeThickness;
         public string Name => "Line";
 
         public void AddFirst(Point point)
@@ -20,6 +21,15 @@ namespace MyLine
         public void AddSecond(Point point)
         {
             _end = point;
+        }
+        public void AddColor(SolidColorBrush solidcolorbrush)
+        {
+            _brush = solidcolorbrush;
+        }
+
+        public void AddStrokeThickness(int strokeThickness)
+        {
+            _strokeThickness = strokeThickness;
         }
 
         public object Clone()
@@ -35,8 +45,8 @@ namespace MyLine
                 Y1 = _start.Y,
                 X2 = _end.X,
                 Y2 = _end.Y,
-                StrokeThickness = 1,
-                Stroke = new SolidColorBrush(Colors.Red)
+                StrokeThickness = _strokeThickness,
+                Stroke = _brush
             }; ;
         }
     }

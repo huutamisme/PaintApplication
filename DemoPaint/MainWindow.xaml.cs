@@ -27,6 +27,8 @@ namespace DemoPaint
         {
             InitializeComponent();
             SetWindowSizeToScreenSize();
+            ChosenColor = Brushes.Black;
+            _strokeThickness = 1;
 
             DataContext = this;
         }
@@ -34,6 +36,7 @@ namespace DemoPaint
         bool _isDrawing = false;
         Point _start;
         Point _end;
+        int _strokeThickness;
 
         List<UIElement> _list = new List<UIElement>();
         List<IShape> _painters = new List<IShape>();
@@ -120,8 +123,14 @@ namespace DemoPaint
                 {
                     myCanvas.Children.Add(item.Convert());
                 }
+                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                {
+                    _end = new Point(_start.X + (_end.Y - _start.Y), _start.Y + (_end.Y - _start.Y));
+                }
                 _painter.AddFirst(_start);
                 _painter.AddSecond(_end);
+                _painter.AddColor(ChosenColor);
+                _painter.AddStrokeThickness(_strokeThickness);
                 myCanvas.Children.Add(_painter.Convert());
             }
         }
@@ -188,9 +197,9 @@ namespace DemoPaint
         public static readonly DependencyProperty ChosenColorProperty =
         DependencyProperty.Register("ChosenColor", typeof(Brush), typeof(MainWindow), new PropertyMetadata(null));
 
-        public Brush ChosenColor
+        public SolidColorBrush ChosenColor
         {
-            get { return (Brush)GetValue(ChosenColorProperty); }
+            get { return (SolidColorBrush)GetValue(ChosenColorProperty); }
             set { SetValue(ChosenColorProperty, value); }
         }
 
@@ -199,10 +208,23 @@ namespace DemoPaint
             Button button = sender as Button;
             if (button != null)
             {
-                Brush selectedColor = button.Tag as Brush;
+                SolidColorBrush selectedColor = button.Tag as SolidColorBrush;
                 if (selectedColor != null)
                 {
                     ChosenColor = selectedColor;
+                }
+            }
+        }
+
+        private void StrokeThicknessCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBoxItem selectedItem = (ComboBoxItem)((ComboBox)sender).SelectedItem;
+            if (selectedItem != null)
+            {
+                string content = selectedItem.Content.ToString();
+                if (int.TryParse(content.Replace("px", ""), out int thickness))
+                {
+                    _strokeThickness = thickness;
                 }
             }
         }

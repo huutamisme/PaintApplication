@@ -3,15 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoPaint", "DemoPaint\DemoPaint.csproj", "{62A7ECC8-DA0C-4740-9B9D-06CC7E5D9719}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoPaint", "DemoPaint\DemoPaint.csproj", "{62A7ECC8-DA0C-4740-9B9D-06CC7E5D9719}"
+	ProjectSection(ProjectDependencies) = postProject
+		{51F43469-F820-4F02-9505-EF7744B8F804} = {51F43469-F820-4F02-9505-EF7744B8F804}
+		{B4737712-B163-4AA9-8FDE-D6D4D19F69FA} = {B4737712-B163-4AA9-8FDE-D6D4D19F69FA}
+		{CB90CC34-AC73-441E-954F-FAA53913077E} = {CB90CC34-AC73-441E-954F-FAA53913077E}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IShape", "IShape\IShape.csproj", "{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IShape", "IShape\IShape.csproj", "{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLine", "MyLine\MyLine.csproj", "{CB90CC34-AC73-441E-954F-FAA53913077E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLine", "MyLine\MyLine.csproj", "{CB90CC34-AC73-441E-954F-FAA53913077E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyRectangle", "MyRectangle\MyRectangle.csproj", "{B4737712-B163-4AA9-8FDE-D6D4D19F69FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyRectangle", "MyRectangle\MyRectangle.csproj", "{B4737712-B163-4AA9-8FDE-D6D4D19F69FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyEllipse", "MyEllipse\MyEllipse.csproj", "{51F43469-F820-4F02-9505-EF7744B8F804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyEllipse", "MyEllipse\MyEllipse.csproj", "{51F43469-F820-4F02-9505-EF7744B8F804}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

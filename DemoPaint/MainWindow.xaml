@@ -396,6 +396,51 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="CustomComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Grid x:Name="grid" Width="150" Background="#303030">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center" Margin="5"/>
+                            <Canvas Grid.Column="1" Width="20" Height="20">
+                                <Line X1="0" Y1="10" X2="100" Y2="10" Stroke="White">
+                                    <Line.Style>
+                                        <Style TargetType="Line">
+                                            <Setter Property="StrokeThickness" Value="1"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="3px">
+                                                    <Setter Property="StrokeThickness" Value="3"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="5px">
+                                                    <Setter Property="StrokeThickness" Value="5"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="8px">
+                                                    <Setter Property="StrokeThickness" Value="8"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Line.Style>
+                                </Line>
+                            </Canvas>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="grid" Property="Background" Value="#3C3C3C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -579,13 +624,13 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
 
-                                <ComboBox Grid.Column="0" x:Name="FontStyleCombobox" Width="150" Margin="5" Height="20" Foreground="Black"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
+                                <ComboBox Grid.Column="0" x:Name="FontStyleCombobox" Width="150" Margin="5" Height="20" Foreground="Black"  SelectedIndex="0"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
                                     <ComboBoxItem Content="Arial" FontFamily="Arial"/>
                                     <ComboBoxItem Content="Times New Roman" FontFamily="Times New Roman"/>
                                     <ComboBoxItem Content="Verdana" FontFamily="Verdana"/>
                                     <ComboBoxItem Content="Calibri" FontFamily="Calibri"/>
                                 </ComboBox>
-                                <ComboBox Grid.Column="1" x:Name="FontSizeCombobox" Width="50" Height="20" Foreground="Black"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
+                                <ComboBox Grid.Column="1" x:Name="FontSizeCombobox" Width="50" Height="20" Foreground="Black"  SelectedIndex="0"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
                                     <ComboBoxItem Content="8"/>
                                     <ComboBoxItem Content="9"/>
                                     <ComboBoxItem Content="10"/>
@@ -631,6 +676,12 @@
                         </StackPanel>
                     </Border>
                     <StackPanel Orientation="Vertical">
+                        <ComboBox SelectedIndex="0" SelectionChanged="StrokeThicknessCB_SelectionChanged">
+                            <ComboBoxItem Content="1px" Style="{StaticResource CustomComboBoxItemStyle}"/>
+                            <ComboBoxItem Content="3px" Style="{StaticResource CustomComboBoxItemStyle}"/>
+                            <ComboBoxItem Content="5px" Style="{StaticResource CustomComboBoxItemStyle}"/>
+                            <ComboBoxItem Content="8px" Style="{StaticResource CustomComboBoxItemStyle}"/>
+                        </ComboBox>
                         <Menu Background="Transparent" Margin="0 0 15 10">
                             <MenuItem Style="{StaticResource ToolbarMenuItem}" Tag="SquareEditOutline" Click="MenuItem_Click">
                                 <MenuItem.ContextMenu>

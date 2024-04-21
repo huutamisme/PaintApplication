@@ -1,5 +1,6 @@
 
 using System.Windows;
+using System.Windows.Media;
 
 namespace Shapes
 {
@@ -7,6 +8,8 @@ namespace Shapes
     {
         void AddFirst(Point point);
         void AddSecond(Point point);
+        void AddColor(SolidColorBrush solidColorBrush);
+        void AddStrokeThickness(int stroleThickness);
         UIElement Convert();
         string Name { get; }
     }
