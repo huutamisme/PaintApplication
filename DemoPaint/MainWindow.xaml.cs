@@ -29,6 +29,7 @@ namespace DemoPaint
             SetWindowSizeToScreenSize();
             ChosenColor = Brushes.Black;
             _strokeThickness = 1;
+            _strokeType = new double[] {1,0};
 
             DataContext = this;
         }
@@ -37,6 +38,7 @@ namespace DemoPaint
         Point _start;
         Point _end;
         int _strokeThickness;
+        double[] _strokeType;
 
         List<UIElement> _list = new List<UIElement>();
         List<IShape> _painters = new List<IShape>();
@@ -131,6 +133,7 @@ namespace DemoPaint
                 _painter.AddSecond(_end);
                 _painter.AddColor(ChosenColor);
                 _painter.AddStrokeThickness(_strokeThickness);
+                _painter.AddStrokeDashArray(_strokeType);
                 myCanvas.Children.Add(_painter.Convert());
             }
         }
@@ -226,6 +229,30 @@ namespace DemoPaint
                 {
                     _strokeThickness = thickness;
                 }
+            }
+        }
+
+        private void StrokeTypeCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBoxItem selectedItem = (ComboBoxItem)((ComboBox)sender).SelectedItem;
+            string selectedStrokeType = (string)selectedItem.Content;
+
+            switch (selectedStrokeType)
+            {
+                case "Solid":
+                    _strokeType = new double[] { 1, 0 };
+                    break;
+                case "Dash":
+                    _strokeType = new double[] { 5, 3 };
+                    break;
+                case "Dot":
+                    _strokeType = new double[] { 1, 1 };
+                    break;
+                case "DashDotDot":
+                    _strokeType = new double[] { 5, 3, 1, 1, 1, 1 };
+                    break;
+                default:
+                    break;
             }
         }
     }

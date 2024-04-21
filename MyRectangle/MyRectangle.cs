@@ -13,6 +13,7 @@ namespace MyRectangle
         private Point _rightBottom;
         private SolidColorBrush _brush;
         private int _strokeThickness;
+        private double[] _strokeDashArray;
         public string Name => "Rectangle";
         public void AddFirst(Point point)
         {
@@ -32,6 +33,11 @@ namespace MyRectangle
         {
             _strokeThickness = strokeThickness;
         }
+
+        public void AddStrokeDashArray(double[] strokeDashArray)
+        {
+            _strokeDashArray = strokeDashArray;
+        }
         public object Clone()
         {
             return MemberwiseClone();
@@ -44,7 +50,8 @@ namespace MyRectangle
                 Width = Math.Abs(_rightBottom.X - _topLeft.X),
                 Height = Math.Abs(_rightBottom.Y - _topLeft.Y),
                 StrokeThickness = _strokeThickness,
-                Stroke = _brush
+                Stroke = _brush,
+                StrokeDashArray = new DoubleCollection(_strokeDashArray)
             };
             Canvas.SetLeft(item, Math.Min(_topLeft.X, _rightBottom.X));
             Canvas.SetTop(item, Math.Min(_topLeft.Y, _rightBottom.Y));

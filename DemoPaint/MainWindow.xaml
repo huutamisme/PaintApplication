@@ -396,7 +396,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="CustomComboBoxItemStyle" TargetType="ComboBoxItem">
+        <Style x:Key="CCBIStrokeThickness" TargetType="ComboBoxItem">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -441,6 +441,54 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="CCBIStrokeType" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Grid x:Name="grid" Width="200" Background="#303030">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center" Margin="5"/>
+                            <Canvas Grid.Column="1" Width="20" Height="20">
+                                <Line X1="0" Y1="10" X2="100" Y2="10" Stroke="White">
+                                    <Line.Style>
+                                        <Style TargetType="Line">
+                                            <Setter Property="StrokeThickness" Value="1"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="Solid">
+                                                    <Setter Property="StrokeDashArray" Value="{x:Null}"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="Dash">
+                                                    <Setter Property="StrokeDashArray" Value="5,3"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="Dot">
+                                                    <Setter Property="StrokeDashArray" Value="1,1"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=Content, RelativeSource={RelativeSource TemplatedParent}}" Value="DashDotDot">
+                                                    <Setter Property="StrokeDashArray" Value="5,3,1,1,1,1"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Line.Style>
+                                </Line>
+                            </Canvas>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="grid" Property="Background" Value="#3C3C3C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -676,12 +724,20 @@
                         </StackPanel>
                     </Border>
                     <StackPanel Orientation="Vertical">
-                        <ComboBox SelectedIndex="0" SelectionChanged="StrokeThicknessCB_SelectionChanged">
-                            <ComboBoxItem Content="1px" Style="{StaticResource CustomComboBoxItemStyle}"/>
-                            <ComboBoxItem Content="3px" Style="{StaticResource CustomComboBoxItemStyle}"/>
-                            <ComboBoxItem Content="5px" Style="{StaticResource CustomComboBoxItemStyle}"/>
-                            <ComboBoxItem Content="8px" Style="{StaticResource CustomComboBoxItemStyle}"/>
+                        <ComboBox Width="100" SelectedIndex="0" SelectionChanged="StrokeThicknessCB_SelectionChanged">
+                            <ComboBoxItem Content="1px" Style="{StaticResource CCBIStrokeThickness}"/>
+                            <ComboBoxItem Content="3px" Style="{StaticResource CCBIStrokeThickness}"/>
+                            <ComboBoxItem Content="5px" Style="{StaticResource CCBIStrokeThickness}"/>
+                            <ComboBoxItem Content="8px" Style="{StaticResource CCBIStrokeThickness}"/>
                         </ComboBox>
+
+                        <ComboBox Width="100" SelectedIndex="0" SelectionChanged="StrokeTypeCB_SelectionChanged">
+                            <ComboBoxItem Content="Solid" Style="{StaticResource CCBIStrokeType}"/>
+                            <ComboBoxItem Content="Dash" Style="{StaticResource CCBIStrokeType}"/>
+                            <ComboBoxItem Content="Dot" Style="{StaticResource CCBIStrokeType}"/>
+                            <ComboBoxItem Content="DashDotDot" Style="{StaticResource CCBIStrokeType}"/>
+                        </ComboBox>
+
                         <Menu Background="Transparent" Margin="0 0 15 10">
                             <MenuItem Style="{StaticResource ToolbarMenuItem}" Tag="SquareEditOutline" Click="MenuItem_Click">
                                 <MenuItem.ContextMenu>

@@ -10,6 +10,7 @@ namespace Shapes
         void AddSecond(Point point);
         void AddColor(SolidColorBrush solidColorBrush);
         void AddStrokeThickness(int stroleThickness);
+        void AddStrokeDashArray(double[] strokeDashArray);
         UIElement Convert();
         string Name { get; }
     }

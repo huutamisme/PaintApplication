@@ -13,6 +13,7 @@ namespace MyEllipse
         private Point _rightBottom;
         private SolidColorBrush _brush;
         private int _strokeThickness;
+        private double[] _strokeDashArray;
         public string Name => "Ellipse";
         public void AddFirst(Point point)
         {
@@ -32,7 +33,11 @@ namespace MyEllipse
         public void AddStrokeThickness(int strokeThickness)
         {
             _strokeThickness = strokeThickness;
-        }    
+        }
+        public void AddStrokeDashArray(double[] strokeDashArray)
+        {
+            _strokeDashArray = strokeDashArray;
+        }
 
         public object Clone()
         {
@@ -46,7 +51,8 @@ namespace MyEllipse
                 Width = Math.Abs(_rightBottom.X - _topLeft.X),
                 Height = Math.Abs(_rightBottom.Y - _topLeft.Y),
                 StrokeThickness = _strokeThickness,
-                Stroke = _brush
+                Stroke = _brush,
+                StrokeDashArray = new DoubleCollection(_strokeDashArray)
             };
             Canvas.SetLeft(item, Math.Min(_topLeft.X, _rightBottom.X));
             Canvas.SetTop(item, Math.Min(_topLeft.Y, _rightBottom.Y));

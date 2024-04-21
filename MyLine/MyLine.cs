@@ -12,6 +12,7 @@ namespace MyLine
         private Point _end;
         private SolidColorBrush _brush;
         private int _strokeThickness;
+        private double[] _strokeDashArray;
         public string Name => "Line";
 
         public void AddFirst(Point point)
@@ -31,6 +32,10 @@ namespace MyLine
         {
             _strokeThickness = strokeThickness;
         }
+        public void AddStrokeDashArray(double[] strokeDashArray)
+        {
+            _strokeDashArray = strokeDashArray;
+        }
 
         public object Clone()
         {
@@ -46,8 +51,9 @@ namespace MyLine
                 X2 = _end.X,
                 Y2 = _end.Y,
                 StrokeThickness = _strokeThickness,
-                Stroke = _brush
-            }; ;
+                Stroke = _brush,
+                StrokeDashArray = new DoubleCollection(_strokeDashArray)
+            }; 
         }
     }
 
