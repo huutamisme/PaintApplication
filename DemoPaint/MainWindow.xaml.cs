@@ -85,6 +85,9 @@ namespace DemoPaint
                     case "Ellipse":
                         control.Style = FindResource("ShapeBtnEllipse") as Style;
                         break;
+                    case "Star":
+                        control.Style = FindResource("ShapeBtnStar") as Style;
+                        break;
                 }
 
                 control.Tag = item;
