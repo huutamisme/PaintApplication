@@ -67,7 +67,6 @@ namespace DemoPaint
             // ---------------------------------------------------
 
             // Tự tạo ra giao diện
-            int count = 0;
             foreach (var item in _prototypes)
             {
                 var control = new Button();
@@ -76,33 +75,43 @@ namespace DemoPaint
                 {
                     case "Line":
                         control.Style = FindResource("ShapeBtnLine") as Style;
+                        ShapeButtons1.Children.Add(control);
                         break;
 
                     case "Rectangle":
                         control.Style = FindResource("ShapeBtnRectangle") as Style;
+                        ShapeButtons1.Children.Add(control);
                         break;
 
                     case "Ellipse":
                         control.Style = FindResource("ShapeBtnEllipse") as Style;
+                        ShapeButtons1.Children.Add(control);
+
                         break;
                     case "Star":
                         control.Style = FindResource("ShapeBtnStar") as Style;
+                        ShapeButtons1.Children.Add(control);
+                        break;
+                    case "ArrowUp":
+                        control.Style = FindResource("ShapeBtnArrowUp") as Style;
+                        ShapeButtons2.Children.Add(control);
+                        break;
+                    case "ArrowDown":
+                        control.Style = FindResource("ShapeBtnArrowDown") as Style;
+                        ShapeButtons2.Children.Add(control);
+                        break;
+                    case "ArrowLeft":
+                        control.Style = FindResource("ShapeBtnArrowLeft") as Style;
+                        ShapeButtons2.Children.Add(control);
+                        break;
+                    case "ArrowRight":
+                        control.Style = FindResource("ShapeBtnArrowRight") as Style;
+                        ShapeButtons2.Children.Add(control);
                         break;
                 }
 
                 control.Tag = item;
                 control.Click += Control_Click;
-
-                if (count < 4)
-                {
-                    ShapeButtons1.Children.Add(control);
-                }
-                else
-                {
-                    ShapeButtons2.Children.Add(control);
-                }
-
-                count++;
             }
 
             _painter = _prototypes[0];
