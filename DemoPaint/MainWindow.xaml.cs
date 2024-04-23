@@ -1,20 +1,13 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Win32;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Ink;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Shapes;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 
 namespace DemoPaint
 {
@@ -29,10 +22,12 @@ namespace DemoPaint
             SetWindowSizeToScreenSize();
             ChosenColor = Brushes.Black;
             _strokeThickness = 1;
-            _strokeType = new double[] {1,0};
+            _strokeType = new double[] { 1, 0 };
 
             DataContext = this;
         }
+
+        #region Khai báo biến
 
         bool _isDrawing = false;
         Point _start;
@@ -44,23 +39,41 @@ namespace DemoPaint
         List<IShape> _painters = new List<IShape>();
         UIElement _lastElement;
         List<IShape> _prototypes = new List<IShape>();
+        IShape _painter = null;
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
+
+        public static readonly DependencyProperty ChosenColorProperty =
+        DependencyProperty.Register("ChosenColor", typeof(Brush), typeof(MainWindow), new PropertyMetadata(null));
+
+        public SolidColorBrush ChosenColor
+        {
+            get { return (SolidColorBrush)GetValue(ChosenColorProperty); }
+            set { SetValue(ChosenColorProperty, value); }
+        }
+
+        #endregion
+
+        #region Bắt sự kiện, Khởi tạo
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Single configuration
             string folder = AppDomain.CurrentDomain.BaseDirectory;
             var fis = new DirectoryInfo(folder).GetFiles("*.dll");
 
-            foreach(var fi in fis)
+            foreach (var fi in fis)
             {
                 // Lấy tất cả kiểu dữ liệu trong dll
-                var assembly = Assembly.LoadFrom(fi.FullName);
+                var assembly = System.Reflection.Assembly.LoadFrom(fi.FullName);
                 var types = assembly.GetTypes();
 
-                foreach(var type in types)
+                foreach (var type in types)
                 {
-                    if ((type.IsClass) 
-                        && (typeof(IShape).IsAssignableFrom(type))) {
-                        _prototypes.Add((IShape) Activator.CreateInstance(type)!);
+                    if ((type.IsClass)
+                        && (typeof(IShape).IsAssignableFrom(type)))
+                    {
+                        _prototypes.Add((IShape)Activator.CreateInstance(type)!);
                     }
                 }
             }
@@ -116,9 +129,18 @@ namespace DemoPaint
 
             _painter = _prototypes[0];
         }
-        private void Control_Click(object sender, RoutedEventArgs e)  {
+
+        private void SetWindowSizeToScreenSize()
+        {
+            // Set Window size according to actual Screen size
+            Width = SystemParameters.WorkArea.Width;
+            Height = SystemParameters.WorkArea.Height;
+        }
+
+        private void Control_Click(object sender, RoutedEventArgs e)
+        {
             IShape item = (IShape)(sender as Button)!.Tag;
-            _painter = item; 
+            _painter = item;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -132,8 +154,8 @@ namespace DemoPaint
             if (_isDrawing)
             {
                 _end = e.GetPosition(myCanvas);
-                myCanvas.Children.Clear(); 
-                foreach(var item in _painters)
+                myCanvas.Children.Clear();
+                foreach (var item in _painters)
                 {
                     myCanvas.Children.Add(item.Convert());
                 }
@@ -156,24 +178,11 @@ namespace DemoPaint
             _painters.Add((IShape)_painter.Clone());
         }
 
-        IShape _painter = null;
-
-
-        private void SetWindowSizeToScreenSize()
-        {
-            // Set Window size according to actual Screen size
-            Width = SystemParameters.WorkArea.Width;
-            Height = SystemParameters.WorkArea.Height;
-        }
-
         private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             WindowInteropHelper helper = new WindowInteropHelper(this);
             SendMessage(helper.Handle, 161, 2, 0);
         }
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
 
         private void pnlControlBar_MouseEnter(object sender, MouseEventArgs e)
         {
@@ -184,10 +193,12 @@ namespace DemoPaint
         {
             Application.Current.Shutdown();
         }
+
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
         }
+
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
         {
             if (this.WindowState == WindowState.Normal)
@@ -209,15 +220,6 @@ namespace DemoPaint
             textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
         }
 
-        public static readonly DependencyProperty ChosenColorProperty =
-        DependencyProperty.Register("ChosenColor", typeof(Brush), typeof(MainWindow), new PropertyMetadata(null));
-
-        public SolidColorBrush ChosenColor
-        {
-            get { return (SolidColorBrush)GetValue(ChosenColorProperty); }
-            set { SetValue(ChosenColorProperty, value); }
-        }
-
         private void ColorButton_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
@@ -230,6 +232,23 @@ namespace DemoPaint
                 }
             }
         }
+
+        private void SaveBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "PNG Files (*.png)|*.png";
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                SaveCanvasToPng(saveFileDialog.FileName);
+            }
+        }
+
+        private void LoadBtn_Click(object sender, RoutedEventArgs e)
+        {
+        }
+        #endregion
+
+        #region Hàm chức năng
 
         private void StrokeThicknessCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -267,5 +286,28 @@ namespace DemoPaint
                     break;
             }
         }
+
+        private void SaveCanvasToPng(string filename)
+        {
+
+            RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
+                (int)myCanvas.ActualWidth, (int)myCanvas.ActualHeight,
+                96d, 96d, PixelFormats.Pbgra32);
+
+
+            renderBitmap.Render(myCanvas);
+
+
+            PngBitmapEncoder pngEncoder = new PngBitmapEncoder();
+            pngEncoder.Frames.Add(BitmapFrame.Create(renderBitmap));
+
+
+            using (FileStream fileStream = new FileStream(filename, FileMode.Create))
+            {
+                pngEncoder.Save(fileStream);
+            }
+        }
+
+        #endregion       
     }
 }
