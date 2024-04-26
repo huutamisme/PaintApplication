@@ -10,6 +10,9 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
+using System.Text;
+using System.Windows.Shapes;
 
 namespace DemoPaint
 {
@@ -60,8 +63,11 @@ namespace DemoPaint
         Stack<IShape> _undoStack = new Stack<IShape>();
         Stack<IShape> _redoStack = new Stack<IShape>();
         UIElement _lastElement;
-        List<IShape> _prototypes = new List<IShape>();
+        List<IShape> _prototypes = new List<IShape>();  //chứa tất cả các shape load từ file dll
+        List<IShape> _allPainter = new List<IShape>(); // chứa tất cả những hình đã vẽ
         IShape _painter = null;
+        private string json;
+
 
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, int wMsg, int wParam, int lParam);
@@ -191,6 +197,8 @@ namespace DemoPaint
                 _painter.AddStrokeThickness(_strokeThickness);
                 _painter.AddStrokeDashArray(_strokeType);
                 selectedLayer.Children.Add(_painter.Convert());
+                
+                UndoBtn.IsEnabled = true;
             }
         }
 
@@ -198,6 +206,7 @@ namespace DemoPaint
         {
             _isDrawing = false;
             selectedPainter.Push((IShape)_painter.Clone());
+            _allPainter.Add((IShape)_painter.Clone());
             _undoStack.Push((IShape)_painter.Clone());
             _redoStack.Clear();
         }
@@ -264,16 +273,76 @@ namespace DemoPaint
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "PNG Files (*.png)|*.png";
-            if (saveFileDialog.ShowDialog() == true)
+            // serialize to make the json file
+            var settings = new JsonSerializerSettings()
             {
-                SaveCanvasToPng(saveFileDialog.FileName);
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+
+            // convert to json with key - value
+            var serializeShapeList = JsonConvert.SerializeObject(_allPainter, settings);
+
+            // experience 
+            StringBuilder builder = new StringBuilder();
+            builder.Append(serializeShapeList).Append("\n");
+            string content = builder.ToString();
+
+            var saveDialog = new System.Windows.Forms.SaveFileDialog();
+
+            // custom filter: JSON
+            saveDialog.Filter = "JSON (*.json)|*.json";
+
+            if (saveDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = saveDialog.FileName;
+                File.WriteAllText(path, content);
             }
         }
 
+        // không load được
         private void LoadBtn_Click(object sender, RoutedEventArgs e)
         {
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = "JSON (*.json)|*.json";
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = dialog.FileName;
+
+                try
+                {
+                    string content = File.ReadAllText(path);
+
+                    if (content.Length == 0)
+                    {
+                        return;
+                    }
+
+                    var settings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects };
+                    _allPainter.Clear();
+                    foreach(var layer in Layers)
+                    {
+                        Canvas newCanvas = FindCanvasByName(layer);
+                        newCanvas.Children.Clear();
+                    }    
+
+                    List<IShape> containers = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
+                    foreach (var item in containers)
+                    {
+                        _allPainter.Add(item);
+                    }
+
+                    foreach (var shape in _allPainter)
+                    {
+                        var element = shape.Convert();
+                        selectedLayer.Children.Add(element);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading file: " + ex.Message);
+                }
+            }
         }
 
         private void UndoBtn_Click(object sender, RoutedEventArgs e)
@@ -284,6 +353,7 @@ namespace DemoPaint
                 _redoStack.Push(lastAction);
                 selectedPainter.Pop();
                 RedrawCanvas();
+                UpdateUndoRedoButtonState();
             }
         }
 
@@ -295,7 +365,14 @@ namespace DemoPaint
                 _undoStack.Push(redoAction);
                 selectedPainter.Push(redoAction);
                 RedrawCanvas();
+                UpdateUndoRedoButtonState();
             }
+        }
+
+        private void UpdateUndoRedoButtonState()
+        {
+            UndoBtn.IsEnabled = _undoStack.Count > 0;
+            RedoBtn.IsEnabled = _redoStack.Count > 0;
         }
 
         private void AddLayerBtn_Click(object sender, RoutedEventArgs e)
@@ -380,27 +457,6 @@ namespace DemoPaint
                     break;
                 default:
                     break;
-            }
-        }
-
-        private void SaveCanvasToPng(string filename)
-        {
-
-            RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
-                (int)selectedLayer.ActualWidth, (int)selectedLayer.ActualHeight,
-                96d, 96d, PixelFormats.Pbgra32);
-
-
-            renderBitmap.Render(selectedLayer);
-
-
-            PngBitmapEncoder pngEncoder = new PngBitmapEncoder();
-            pngEncoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-
-
-            using (FileStream fileStream = new FileStream(filename, FileMode.Create))
-            {
-                pngEncoder.Save(fileStream);
             }
         }
 

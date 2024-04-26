@@ -9,11 +9,11 @@ namespace MyRectangle
 {
     public class MyRectangle : IShape
     {
-        private Point _topLeft;
-        private Point _rightBottom;
-        private SolidColorBrush _brush;
-        private int _strokeThickness;
-        private double[] _strokeDashArray;
+        public Point _topLeft;
+        public Point _rightBottom;
+        public SolidColorBrush _brush;
+        public int _strokeThickness;
+        public double[] _strokeDashArray;
         public string Name => "Rectangle";
         public void AddFirst(Point point)
         {

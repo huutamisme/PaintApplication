@@ -9,12 +9,12 @@ namespace MyStar
 {
     public class MyStar : IShape
     {
-        private Point _start;
-        private Point _end;
-        private SolidColorBrush _brush;
-        private int _strokeThickness;
-        private double[] _strokeDashArray;
-        private double _angle = 0;
+        public Point _start;
+        public Point _end;
+        public SolidColorBrush _brush;
+        public int _strokeThickness;
+        public double[] _strokeDashArray;
+        public double _angle = 0;
 
         public string Name => "Star";
 
