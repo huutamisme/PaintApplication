@@ -8,6 +8,8 @@ using Shapes;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+using System.Diagnostics;
+using System.Collections.ObjectModel;
 
 namespace DemoPaint
 {
@@ -16,6 +18,7 @@ namespace DemoPaint
     /// </summary>
     public partial class MainWindow : Window
     {
+
         public MainWindow()
         {
             InitializeComponent();
@@ -24,11 +27,29 @@ namespace DemoPaint
             _strokeThickness = 1;
             _strokeType = new double[] { 1, 0 };
 
+            string canvasName = "myCanvas";
+            Canvas canvasToAdd = new Canvas();
+            canvasToAdd.Name = canvasName;
+            canvasToAdd.Background = Brushes.White;
+            Canvas.SetZIndex(canvasToAdd, 0);
+            Layers.Add(canvasName);
+            DrawArea.Children.Add(canvasToAdd);
+            selectedLayer = FindCanvasByName("myCanvas");
+            Canvas.SetZIndex(tempCanvas, 1);
+
+            _paintersLayer.Add(new Stack<IShape>());
+            selectedPainter = _paintersLayer[0];
+
             DataContext = this;
         }
 
         #region Khai báo biến
 
+        public ObservableCollection<String> Layers { get; set; } = new ObservableCollection<String>();
+        public ObservableCollection<Stack<IShape>> _paintersLayer { get; set; } = new ObservableCollection<Stack<IShape>>();
+
+        Canvas selectedLayer;
+        Stack<IShape> selectedPainter = new Stack<IShape>();
         bool _isDrawing = false;
         Point _start;
         Point _end;
@@ -36,7 +57,8 @@ namespace DemoPaint
         double[] _strokeType;
 
         List<UIElement> _list = new List<UIElement>();
-        List<IShape> _painters = new List<IShape>();
+        Stack<IShape> _undoStack = new Stack<IShape>();
+        Stack<IShape> _redoStack = new Stack<IShape>();
         UIElement _lastElement;
         List<IShape> _prototypes = new List<IShape>();
         IShape _painter = null;
@@ -146,18 +168,18 @@ namespace DemoPaint
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _isDrawing = true;
-            _start = e.GetPosition(myCanvas);
+            _start = e.GetPosition(selectedLayer);
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (_isDrawing)
             {
-                _end = e.GetPosition(myCanvas);
-                myCanvas.Children.Clear();
-                foreach (var item in _painters)
+                _end = e.GetPosition(selectedLayer);
+                selectedLayer.Children.Clear();
+                foreach (var item in selectedPainter)
                 {
-                    myCanvas.Children.Add(item.Convert());
+                    selectedLayer.Children.Add(item.Convert());
                 }
                 if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                 {
@@ -168,14 +190,16 @@ namespace DemoPaint
                 _painter.AddColor(ChosenColor);
                 _painter.AddStrokeThickness(_strokeThickness);
                 _painter.AddStrokeDashArray(_strokeType);
-                myCanvas.Children.Add(_painter.Convert());
+                selectedLayer.Children.Add(_painter.Convert());
             }
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _isDrawing = false;
-            _painters.Add((IShape)_painter.Clone());
+            selectedPainter.Push((IShape)_painter.Clone());
+            _undoStack.Push((IShape)_painter.Clone());
+            _redoStack.Clear();
         }
 
         private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -220,6 +244,11 @@ namespace DemoPaint
             textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
         }
 
+        private void LayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LayersPopup.IsOpen = !LayersPopup.IsOpen;
+        }
+
         private void ColorButton_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
@@ -246,6 +275,73 @@ namespace DemoPaint
         private void LoadBtn_Click(object sender, RoutedEventArgs e)
         {
         }
+
+        private void UndoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_undoStack.Count > 0)
+            {
+                IShape lastAction = _undoStack.Pop();
+                _redoStack.Push(lastAction);
+                selectedPainter.Pop();
+                RedrawCanvas();
+            }
+        }
+
+        private void RedoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_redoStack.Count > 0)
+            {
+                var redoAction = _redoStack.Pop();
+                _undoStack.Push(redoAction);
+                selectedPainter.Push(redoAction);
+                RedrawCanvas();
+            }
+        }
+
+        private void AddLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string canvasName = "myLayer" + Layers.Count().ToString();
+
+            Canvas canvasToAdd = new Canvas();
+            canvasToAdd.Name = canvasName;
+            Canvas.SetZIndex(canvasToAdd, Layers.Count());
+            canvasToAdd.Background = Brushes.White;
+
+            Layers.Add(canvasName);
+            _paintersLayer.Add(new Stack<IShape>());
+            DrawArea.Children.Add(canvasToAdd);
+            Canvas.SetZIndex(tempCanvas, Layers.Count() + 1);
+        }
+
+        private void Layer_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                int selectedIndex = (sender as ListBox).SelectedIndex;
+                if (selectedIndex >= 0 && selectedIndex < Layers.Count)
+                {
+                    selectedLayer = FindCanvasByName(Layers[selectedIndex]);
+                    selectedPainter = _paintersLayer[selectedIndex];
+                }
+            }
+        }
+
+        private void LayerVisibleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = (Button)sender as Button;
+            if (btn != null && btn.Tag.ToString().Equals("Eye"))
+            {
+                btn.Tag = "EyeOff";
+                selectedLayer.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                btn.Tag = "Eye";
+                selectedLayer.Visibility = Visibility.Visible;
+
+            }
+        }
+
         #endregion
 
         #region Hàm chức năng
@@ -291,11 +387,11 @@ namespace DemoPaint
         {
 
             RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
-                (int)myCanvas.ActualWidth, (int)myCanvas.ActualHeight,
+                (int)selectedLayer.ActualWidth, (int)selectedLayer.ActualHeight,
                 96d, 96d, PixelFormats.Pbgra32);
 
 
-            renderBitmap.Render(myCanvas);
+            renderBitmap.Render(selectedLayer);
 
 
             PngBitmapEncoder pngEncoder = new PngBitmapEncoder();
@@ -308,6 +404,28 @@ namespace DemoPaint
             }
         }
 
-        #endregion       
+        private void RedrawCanvas()
+        {
+            selectedLayer.Children.Clear();
+            foreach (var item in selectedPainter)
+            {
+                selectedLayer.Children.Add(item.Convert());
+            }
+        }
+
+        private Canvas FindCanvasByName(string canvasName)
+        {
+            foreach (var child in DrawArea.Children)
+            {
+                if (child is Canvas canvas && canvas.Name == canvasName)
+                {
+                    return canvas;
+                }
+            }
+            return null;
+        }
+
+        #endregion
+
     }
 }

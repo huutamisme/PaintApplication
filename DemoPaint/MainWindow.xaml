@@ -132,6 +132,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="AddLayerBtn" TargetType="Button">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="colorBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="ShapeBtnLine" TargetType="Button">
             <Setter Property="Height" Value="25"/>
             <Setter Property="Width" Value="25"/>
@@ -488,6 +511,25 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="LayerVisibleStyle" TargetType="Button">
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0 0 2 2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="colorBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="20" Width="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
     </Window.Resources>
     <Grid>
@@ -495,11 +537,10 @@
             <RowDefinition Height="25"/>
             <RowDefinition Height="50"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="620"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" x:Name="CustomTitleBar" Background="Transparent">
+        <Grid Grid.Row="0" Panel.ZIndex="1" x:Name="CustomTitleBar" Background="#202020">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -535,7 +576,7 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" x:Name="MenuBar" Background="Transparent" Margin="6 9 0 0">
+        <Grid Grid.Row="1" Panel.ZIndex="2" x:Name="MenuBar" Background="#202020" Margin="6 0 0 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -619,12 +660,12 @@
             <Button Grid.Column="2" Style="{StaticResource MenuBarBtnCustom}" Tag="ContentSave" Click="SaveBtn_Click"/>
             <GridSplitter Grid.Column="3" Width="1" Height="20" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
             <StackPanel Grid.Column="4" Orientation="Horizontal" Background="Transparent">
-                <Button Style="{StaticResource MenuBarBtnCustom}" Tag="Undo"/>
-                <Button Style="{StaticResource MenuBarBtnCustom}" Tag="Redo"/>
+                <Button Style="{StaticResource MenuBarBtnCustom}" Tag="Undo" Click="UndoBtn_Click"/>
+                <Button Style="{StaticResource MenuBarBtnCustom}" Tag="Redo" Click="RedoBtn_Click"/>
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="2" x:Name="ToolBar"  Background="#272727" Height="120">
+        <Grid Grid.Row="2" Panel.ZIndex="3" x:Name="ToolBar"  Background="#272727" Height="120">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -791,21 +832,78 @@
                     <RowDefinition Height="30*"/>
                 </Grid.RowDefinitions>
 
-                <Button Grid.Row="0" Style="{StaticResource ToolbarLayerBtn}" Tag="LayersTripleOutline" Foreground="{StaticResource color3}"/>
+                <Button Grid.Row="0" Style="{StaticResource ToolbarLayerBtn}" Click="LayerBtn_Click" Tag="LayersTripleOutline" Foreground="{StaticResource color3}"/>
                 <Label Grid.Row="1" Content="Layers" Foreground="White" HorizontalAlignment="Center"/>
             </Grid>
 
-            <!--<materialDesign:PackIcon Kind="HorizontalLine" Foreground="White" Width="70" Height="10"/>-->
+            <materialDesign:PackIcon Kind="EyeOff" Foreground="White" Width="70" Height="10"/>
         </Grid>
 
-        <Grid Grid.Row="3">
-            <Canvas x:Name="myCanvas" Background="White">
-            </Canvas>
-            <Canvas Background="Transparent" 
+        <Grid x:Name="DrawArea" Grid.Row="3" Panel.ZIndex="0">
+            <!--<Canvas x:Name="myCanvas" Background="White" >
+            </Canvas>-->
+            <Canvas x:Name="tempCanvas"
+                    Background="Transparent" 
                     MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
                     MouseMove="Canvas_MouseMove" 
                     MouseLeftButtonUp="Canvas_MouseLeftButtonUp">
             </Canvas>
         </Grid>
+
+        <Popup x:Name="LayersPopup" Height="620" IsOpen="False" Panel.ZIndex="1" Placement="Right" VerticalOffset="205" HorizontalOffset="1530">
+            <Border Background="#272727" Width="140" Margin="10" CornerRadius="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0" Style="{StaticResource AddLayerBtn}" Tag="PlusCircleOutline" Foreground="White" Click="AddLayerBtn_Click"/>
+
+                    <GridSplitter Grid.Row="1" Width="140" Height="1" Background="Gray" Opacity="0.3"/>
+
+                    <ScrollViewer Grid.Row="2" BorderBrush="Transparent" BorderThickness="0" Padding="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ScrollViewer.PanningMode="Both" Height="500">
+                        <Border BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
+                            <ListBox ItemsSource="{Binding Layers}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" SelectedIndex="0" SelectionChanged="Layer_SelectionChanged">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Margin" Value="0 0 0 10"/>
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border x:Name="ItemLayoutBorder" BorderThickness="2" CornerRadius="5" Width="90" Height="80" BorderBrush="Black">
+                                                        <StackPanel>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Rectangle Fill="Transparent" Width="60" Height="22"/>
+                                                                <Button Style="{StaticResource LayerVisibleStyle}" Tag="Eye" Foreground="White" Click="LayerVisibleBtn_Click"/>
+                                                            </StackPanel>
+                                                            <Rectangle Fill="White" Width="80" Height="35"/>
+                                                            <Rectangle Fill="Transparent" Width="80" Height="22"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ItemLayoutBorder" Property="BorderBrush" Value="White"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="ItemLayoutBorder" Property="BorderBrush" Value="#A57BAC"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </Border>
+                    </ScrollViewer>
+
+                    <GridSplitter Grid.Row="3" Width="140" Height="1" Background="Gray" VerticalAlignment="Center" Opacity="0.3"/>
+                </Grid>
+            </Border>
+        </Popup>
     </Grid>
 </Window>
