@@ -836,10 +836,10 @@
                 <Label Grid.Row="1" Content="Layers" Foreground="White" HorizontalAlignment="Center"/>
             </Grid>
 
-            <materialDesign:PackIcon Kind="EyeOff" Foreground="White" Width="70" Height="10"/>
+            <!--<materialDesign:PackIcon Kind="EyeOff" Foreground="White" Width="70" Height="10"/>-->
         </Grid>
 
-        <Grid x:Name="DrawArea" Grid.Row="3" Panel.ZIndex="0">
+        <Grid x:Name="DrawArea" Grid.Row="3" Panel.ZIndex="0" Background="White">
             <!--<Canvas x:Name="myCanvas" Background="White" >
             </Canvas>-->
             <Canvas x:Name="tempCanvas"

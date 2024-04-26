@@ -305,10 +305,10 @@ namespace DemoPaint
             Canvas canvasToAdd = new Canvas();
             canvasToAdd.Name = canvasName;
             Canvas.SetZIndex(canvasToAdd, Layers.Count());
-            canvasToAdd.Background = Brushes.White;
+            canvasToAdd.Background = Brushes.Transparent;
 
-            Layers.Add(canvasName);
-            _paintersLayer.Add(new Stack<IShape>());
+            Layers.Insert(0, canvasName);
+            _paintersLayer.Insert(0, new Stack<IShape>());
             DrawArea.Children.Add(canvasToAdd);
             Canvas.SetZIndex(tempCanvas, Layers.Count() + 1);
         }
