@@ -84,13 +84,13 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="ChosenColorBtn" TargetType="Button">
+        <Style x:Key="ChosenColorBtn" TargetType="RadioButton">
             <Setter Property="Margin" Value="0 -15 5 5"/>
             <Setter Property="Height" Value="40"/>
             <Setter Property="Width" Value="40"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="RadioButton">
                         <Grid>
                             <Border Background="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" CornerRadius="25" Width="35" Height="35" BorderThickness="1" BorderBrush="#4C4C4C">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -100,6 +100,10 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="hoverEllipse" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="hoverEllipse" Property="Opacity" Value="0.5"/>
+                                <Setter TargetName="hoverEllipse" Property="Stroke" Value="#A57BAC"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -601,7 +605,7 @@
                                         <materialDesign:PackIcon Kind="FolderOpen"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="Save" InputGestureText="Ctrl+S" Style="{StaticResource menuItemStyle}">
+                                <MenuItem Header="Save" InputGestureText="Ctrl+S" Style="{StaticResource menuItemStyle}" Click="SaveBtn_Click"> 
                                     <MenuItem.Icon>
                                         <materialDesign:PackIcon Kind="ContentSave"/>
                                     </MenuItem.Icon>
@@ -714,13 +718,13 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
 
-                                <ComboBox Grid.Column="0" x:Name="FontStyleCombobox" Width="150" Margin="5" Height="20" Foreground="Black"  SelectedIndex="0"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
+                                <ComboBox Grid.Column="0" x:Name="FontStyleCombobox" Width="150" Margin="5" Height="20" Foreground="Black"  SelectedIndex="0" SelectionChanged="FontStyleCombobox_SelectionChanged"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
                                     <ComboBoxItem Content="Arial" FontFamily="Arial"/>
                                     <ComboBoxItem Content="Times New Roman" FontFamily="Times New Roman"/>
                                     <ComboBoxItem Content="Verdana" FontFamily="Verdana"/>
                                     <ComboBoxItem Content="Calibri" FontFamily="Calibri"/>
                                 </ComboBox>
-                                <ComboBox Grid.Column="1" x:Name="FontSizeCombobox" Width="50" Height="20" Foreground="Black"  SelectedIndex="0"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
+                                <ComboBox Grid.Column="1" x:Name="FontSizeCombobox" Width="50" Height="20" Foreground="Black"  SelectedIndex="0" SelectionChanged="FontSizeCombobox_SelectionChanged"  ItemContainerStyle="{StaticResource ComboBoxItemStyle}">
                                     <ComboBoxItem Content="8"/>
                                     <ComboBoxItem Content="9"/>
                                     <ComboBoxItem Content="10"/>
@@ -739,7 +743,7 @@
                                     <ComboBoxItem Content="72"/>
                                 </ComboBox>
                                 <GridSplitter Grid.Column="2" Width="1" Height="20" Background="Gray" VerticalAlignment="Center" Opacity="0.3" Margin="10 0 0 0"/>
-                                <CheckBox Grid.Column="3" x:Name="BackgrounFillCheckBox" Content="Background Fill" Foreground="White" BorderBrush="White" BorderThickness="1" VerticalAlignment="Center" Margin="10 0 10 0"/>
+                                <CheckBox Grid.Column="3" x:Name="BackgrounFillCheckBox" Content="Background Fill" Foreground="White" BorderBrush="White" BorderThickness="1" VerticalAlignment="Center" Margin="10 0 10 0" Checked="BackgrounFillCheckBox_Checked" Unchecked="BackgrounFillCheckBox_Unchecked"/>
                             </Grid>
                         </Border>
                     </Popup>
@@ -794,7 +798,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
-                    <Button Style="{StaticResource ChosenColorBtn}" Tag="{Binding ChosenColor}"/>
+                    <RadioButton GroupName="Color" Style="{StaticResource ChosenColorBtn}" Tag="{Binding ChosenColor}" Click="ChosenColorBtn_Click"/>
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
                             <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource BlackBrush}" Click="ColorButton_Click"/>
@@ -821,6 +825,7 @@
                             <Button Style="{StaticResource ColorBtn}" Tag="{StaticResource LavenderBrush}" Click="ColorButton_Click"/>
                         </StackPanel>
                     </StackPanel>
+                    <RadioButton GroupName="Color" Style="{StaticResource ChosenColorBtn}" Tag="{Binding BackgroundColor}" Click="BackgroundColorBtn_Click"/>
                 </StackPanel>
                 <Label Grid.Row="1" Content="Colors" Foreground="White" HorizontalAlignment="Center"/>
             </Grid>
@@ -867,7 +872,7 @@
 
                     <ScrollViewer Grid.Row="2" BorderBrush="Transparent" BorderThickness="0" Padding="15" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ScrollViewer.PanningMode="Both" Height="500">
                         <Border BorderBrush="Transparent" BorderThickness="0" Background="Transparent">
-                            <ListBox ItemsSource="{Binding Layers}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" SelectedIndex="0" SelectionChanged="Layer_SelectionChanged">
+                            <ListBox ItemsSource="{Binding Layers}" x:Name="LayerListBox" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" SelectedIndex="0" SelectionChanged="Layer_SelectionChanged">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
                                         <Setter Property="Margin" Value="0 0 0 10"/>

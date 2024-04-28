@@ -27,6 +27,7 @@ namespace DemoPaint
             InitializeComponent();
             SetWindowSizeToScreenSize();
             ChosenColor = Brushes.Black;
+            BackgroundColor = Brushes.Black;
             _strokeThickness = 1;
             _strokeType = new double[] { 1, 0 };
 
@@ -40,7 +41,7 @@ namespace DemoPaint
             selectedLayer = FindCanvasByName("myCanvas");
             Canvas.SetZIndex(tempCanvas, 1);
 
-            _paintersLayer.Add(new Stack<IShape>());
+            _paintersLayer.Add(new Stack<object>());
             selectedPainter = _paintersLayer[0];
 
             DataContext = this;
@@ -49,20 +50,26 @@ namespace DemoPaint
         #region Khai báo biến
 
         public ObservableCollection<String> Layers { get; set; } = new ObservableCollection<String>();
-        public ObservableCollection<Stack<IShape>> _paintersLayer { get; set; } = new ObservableCollection<Stack<IShape>>();
+        public ObservableCollection<Stack<object>> _paintersLayer { get; set; } = new ObservableCollection<Stack<object>>();
 
         Canvas selectedLayer;
-        Stack<IShape> selectedPainter = new Stack<IShape>();
+        Stack<object> selectedPainter = new Stack<object>(); // mảng chứa các hình đã vẽ trong 1 Layer
         bool _isDrawing = false;
+        bool _isTextFormatChosen = false;
         bool _isTexting = false;
+        bool _isChosenColorClicked = true;
+        bool _isBackgroundColorClicked = false;
+        bool _isBackgrounFillCheckBox = false;
         Point _start;
         Point _end;
         int _strokeThickness;
         double[] _strokeType;
+        String textFontStyle;
+        int textFontSize;
 
         List<UIElement> _list = new List<UIElement>();
-        Stack<IShape> _undoStack = new Stack<IShape>();
-        Stack<IShape> _redoStack = new Stack<IShape>();
+        Stack<object> _undoStack = new Stack<object>();
+        Stack<object> _redoStack = new Stack<object>();
         UIElement _lastElement;
         List<IShape> _prototypes = new List<IShape>();  //chứa tất cả các shape load từ file dll
         List<IShape> _allPainter = new List<IShape>(); // chứa tất cả những hình đã vẽ
@@ -80,6 +87,15 @@ namespace DemoPaint
         {
             get { return (SolidColorBrush)GetValue(ChosenColorProperty); }
             set { SetValue(ChosenColorProperty, value); }
+        }
+
+        public static readonly DependencyProperty BackgroundColorProperty =
+        DependencyProperty.Register("BackgroundColor", typeof(Brush), typeof(MainWindow), new PropertyMetadata(null));
+
+        public SolidColorBrush BackgroundColor
+        {
+            get { return (SolidColorBrush)GetValue(BackgroundColorProperty); }
+            set { SetValue(BackgroundColorProperty, value); }
         }
 
         #endregion
@@ -168,13 +184,30 @@ namespace DemoPaint
 
         private void Control_Click(object sender, RoutedEventArgs e)
         {
+            if(_isTextFormatChosen)
+            {
+                _isTexting = false;
+                _isTextFormatChosen = false;
+                textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
+            }    
             IShape item = (IShape)(sender as Button)!.Tag;
             _painter = item;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _isDrawing = true;
+            if (_isTextFormatChosen)
+            {
+                _isTexting = true;
+                _isDrawing = false;
+                _painter = _prototypes[6];
+                
+            }
+            else
+            {
+                _isTexting = false;
+                _isDrawing = true;
+            }
             _start = e.GetPosition(selectedLayer);
         }
 
@@ -184,10 +217,7 @@ namespace DemoPaint
             {
                 _end = e.GetPosition(selectedLayer);
                 selectedLayer.Children.Clear();
-                foreach (var item in selectedPainter)
-                {
-                    selectedLayer.Children.Add(item.Convert());
-                }
+                RedrawCanvas();
                 if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
                 {
                     _end = new Point(_start.X + (_end.Y - _start.Y), _start.Y + (_end.Y - _start.Y));
@@ -201,15 +231,75 @@ namespace DemoPaint
                 
                 UndoBtn.IsEnabled = true;
             }
+            if (_isTexting)
+            {
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.IBeam;
+                _end = e.GetPosition(selectedLayer);
+                selectedLayer.Children.Clear();
+                RedrawCanvas();
+                _painter.AddFirst(_start);
+                _painter.AddSecond(_end);
+                _painter.AddColor(Brushes.Black);
+                _painter.AddStrokeThickness(1);
+                _painter.AddStrokeDashArray(new double[] {4,4});
+                selectedLayer.Children.Add(_painter.Convert());
+                
+            }
+            else
+            {
+                Mouse.OverrideCursor = null;
+            }
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            _isDrawing = false;
-            selectedPainter.Push((IShape)_painter.Clone());
-            _allPainter.Add((IShape)_painter.Clone());
-            _undoStack.Push((IShape)_painter.Clone());
-            _redoStack.Clear();
+            if(_isDrawing)
+            {
+                _isDrawing = false;
+                selectedPainter.Push((IShape)_painter.Clone());
+                _allPainter.Add((IShape)_painter.Clone());
+                _undoStack.Push((IShape)_painter.Clone());
+                _redoStack.Clear();
+            }    
+            if (_isTexting)
+            {
+                _isTexting = false;
+                double width = Math.Abs(_end.X - _start.X);
+                double height = Math.Abs(_end.Y - _start.Y);
+
+                double padding1 = height * 0.05;
+                double padding2 = width * 0.05;
+
+                double padding = Math.Min(padding1, padding2);
+
+                SolidColorBrush bgColor = Brushes.Transparent;
+                if(_isBackgrounFillCheckBox)
+                {
+                    bgColor = BackgroundColor;
+                }    
+
+                TextBox textBox = new TextBox
+                {
+                    Width = width - padding * 2,
+                    Height = height - padding * 2,
+                    Background = bgColor,
+                    BorderThickness = new Thickness(0),
+                    Foreground = ChosenColor,
+                    FontSize = textFontSize,
+                    FontFamily = new FontFamily(textFontStyle),
+                    AcceptsReturn = true,
+                    TextWrapping = TextWrapping.Wrap,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(Math.Min(_start.X, _end.X) + padding, Math.Min(_start.Y, _end.Y) + padding, 0, 0),
+                };
+
+                textBox.LostFocus += TextBox_LostFocus;
+
+                selectedLayer.Children.Add(textBox);
+
+                textBox.Focus();
+            }
         }
 
         private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -252,8 +342,7 @@ namespace DemoPaint
         private void Text_Formatting_Click(object sender, RoutedEventArgs e)
         {
             textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
-            _isDrawing = false;
-            _isTexting = true;
+            _isTextFormatChosen = !_isTextFormatChosen;
         }
 
         private void LayerBtn_Click(object sender, RoutedEventArgs e)
@@ -269,7 +358,14 @@ namespace DemoPaint
                 SolidColorBrush selectedColor = button.Tag as SolidColorBrush;
                 if (selectedColor != null)
                 {
-                    ChosenColor = selectedColor;
+                    if(_isBackgroundColorClicked)
+                    {
+                        BackgroundColor = selectedColor;
+                    }    
+                    else
+                    {
+                        ChosenColor = selectedColor;
+                    }
                 }
             }
         }
@@ -288,11 +384,22 @@ namespace DemoPaint
         {
             if (_undoStack.Count > 0)
             {
-                IShape lastAction = _undoStack.Pop();
-                _redoStack.Push(lastAction);
-                selectedPainter.Pop();
-                RedrawCanvas();
-                UpdateUndoRedoButtonState();
+                var lastAction = _undoStack.Pop();
+                if (lastAction is IShape || lastAction is TextBlock)
+                {
+                    _redoStack.Push(lastAction);
+                    selectedPainter.Pop();
+                    RedrawCanvas();
+                    UpdateUndoRedoButtonState();
+                }
+                //else if (lastAction is string) // Layer
+                //{
+                //    Layers.Remove(lastAction as string);
+                //    _paintersLayer.RemoveAt(_paintersLayer.Count - 1);
+                //    DrawArea.Children.RemoveAt(DrawArea.Children.Count - 1);
+                //    selectedLayer = FindCanvasByName(Layers.LastOrDefault());
+                //    selectedPainter = _paintersLayer.LastOrDefault();
+                //}
             }
         }
 
@@ -301,10 +408,29 @@ namespace DemoPaint
             if (_redoStack.Count > 0)
             {
                 var redoAction = _redoStack.Pop();
-                _undoStack.Push(redoAction);
-                selectedPainter.Push(redoAction);
-                RedrawCanvas();
-                UpdateUndoRedoButtonState();
+                if (redoAction is IShape || redoAction is TextBlock)
+                {
+                    _undoStack.Push(redoAction);
+                    selectedPainter.Push(redoAction);
+                    RedrawCanvas();
+                    UpdateUndoRedoButtonState();
+                }
+                //else if (redoAction is string) // Layer
+                //{
+                //    string canvasName = redoAction as string;
+                //    Canvas canvasToAdd = new Canvas();
+                //    canvasToAdd.Name = canvasName;
+                //    Canvas.SetZIndex(canvasToAdd, Layers.Count() - 1);
+                //    canvasToAdd.Background = Brushes.Transparent;
+
+                //    Layers.Add(canvasName);
+                //    _paintersLayer.Add(new Stack<object>());
+                //    DrawArea.Children.Add(canvasToAdd);
+                //    Canvas.SetZIndex(tempCanvas, Layers.Count() + 1);
+
+                //    selectedLayer = FindCanvasByName(canvasName);
+                //    selectedPainter = _paintersLayer.LastOrDefault();
+                //}
             }
         }
 
@@ -316,6 +442,7 @@ namespace DemoPaint
 
         private void AddLayerBtn_Click(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine(Layers.Count);
             string canvasName = "myLayer" + Layers.Count().ToString();
 
             Canvas canvasToAdd = new Canvas();
@@ -324,9 +451,14 @@ namespace DemoPaint
             canvasToAdd.Background = Brushes.Transparent;
 
             Layers.Insert(0, canvasName);
-            _paintersLayer.Insert(0, new Stack<IShape>());
+            _paintersLayer.Insert(0, new Stack<object>());
             DrawArea.Children.Add(canvasToAdd);
             Canvas.SetZIndex(tempCanvas, Layers.Count() + 1);
+
+            selectedLayer = FindCanvasByName(Layers[0]);
+            selectedPainter = _paintersLayer[0];
+            LayerListBox.SelectedItem = canvasName;
+
         }
 
         private void Layer_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -420,12 +552,40 @@ namespace DemoPaint
             }
         }
 
+        private void FontStyleCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBoxItem selectedItem = (ComboBoxItem)FontStyleCombobox.SelectedItem;
+            if (selectedItem != null)
+            {
+                textFontStyle = selectedItem.Content.ToString();
+            }
+        }
+
+        private void FontSizeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBoxItem selectedItem = (ComboBoxItem)FontSizeCombobox.SelectedItem;
+            if (selectedItem != null)
+            {
+                if (int.TryParse(selectedItem.Content.ToString(), out int size))
+                {
+                    textFontSize = size;
+                }
+            }
+        }
+
         private void RedrawCanvas()
         {
             selectedLayer.Children.Clear();
-            foreach (var item in selectedPainter)
+            foreach (var item in selectedPainter.Reverse())
             {
-                selectedLayer.Children.Add(item.Convert());
+                if (item is IShape shape)
+                {
+                    selectedLayer.Children.Add(shape.Convert());
+                }
+                else if (item is TextBlock textBlock)
+                {
+                    selectedLayer.Children.Add(textBlock);
+                }
             }
         }
 
@@ -480,7 +640,7 @@ namespace DemoPaint
             canvasToAdd.MouseLeftButtonUp += (sender, e) => Canvas_MouseLeftButtonUp(sender, e);
             DrawArea.Children.Add(canvasToAdd);
 
-            _paintersLayer.Add(new Stack<IShape>());
+            _paintersLayer.Add(new Stack<object>());
             selectedPainter = _paintersLayer[0];
         }
 
@@ -554,5 +714,61 @@ namespace DemoPaint
         }
         #endregion
 
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null)
+            {
+                TextBlock textBlock = new TextBlock
+                {
+                    Text = textBox.Text,
+                    Width = textBox.ActualWidth,
+                    Height = textBox.ActualHeight,
+                    Background = textBox.Background,
+                    Foreground = textBox.Foreground,
+                    FontSize = textBox.FontSize,
+                    FontFamily = textBox.FontFamily,
+                    TextWrapping = TextWrapping.Wrap,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(textBox.Margin.Left, textBox.Margin.Top, 0, 0)
+                };
+
+                selectedLayer.Children.Remove(textBox);
+                selectedLayer.Children.Add(textBlock);
+                selectedPainter.Push(textBlock);
+
+                selectedLayer.Children.Clear();
+                RedrawCanvas();
+
+                _allPainter.Add((IShape)_painter.Clone());
+
+                _undoStack.Push(textBlock);
+                _redoStack.Clear();
+
+            }
+        }
+
+        private void ChosenColorBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _isChosenColorClicked = true;
+            _isBackgroundColorClicked = false;
+        }
+
+        private void BackgroundColorBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _isChosenColorClicked = false;
+            _isBackgroundColorClicked = true;
+        }
+
+        private void BackgrounFillCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            _isBackgrounFillCheckBox = true;
+        }
+
+        private void BackgrounFillCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _isBackgrounFillCheckBox = false;
+        }
     }
 }
