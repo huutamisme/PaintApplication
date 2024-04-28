@@ -49,6 +49,14 @@ namespace DemoPaint
 
             _redoStacksLayer.Add(new Stack<object>());
             _redoStack = _redoStacksLayer[0];
+
+            _isDrawing = false;
+            _isTextFormatChosen = false;
+            _isTexting = false;
+            _isChosenColorClicked = true;
+            _isBackgroundColorClicked = false;
+            _isBackgrounFillCheckBox = false;
+
             DataContext = this;
         }
 
@@ -63,12 +71,12 @@ namespace DemoPaint
         Stack<object> selectedPainter = new Stack<object>(); // mảng chứa các hình đã vẽ trong 1 Layer
         Stack<object> _undoStack = new Stack<object>(); // mảng undo trong 1 Layer
         Stack<object> _redoStack = new Stack<object>(); // mảng redo trong 1 Layer
-        bool _isDrawing = false;
-        bool _isTextFormatChosen = false;
-        bool _isTexting = false;
-        bool _isChosenColorClicked = true;
-        bool _isBackgroundColorClicked = false;
-        bool _isBackgrounFillCheckBox = false;
+        bool _isDrawing;
+        bool _isTextFormatChosen;
+        bool _isTexting;
+        bool _isChosenColorClicked;
+        bool _isBackgroundColorClicked;
+        bool _isBackgrounFillCheckBox;
         Point _start;
         Point _end;
         int _strokeThickness;
@@ -81,7 +89,6 @@ namespace DemoPaint
         List<IShape> _prototypes = new List<IShape>();  //chứa tất cả các shape load từ file dll
         List<IShape> _allPainter = new List<IShape>(); // chứa tất cả những hình đã vẽ
         IShape _painter = null;
-        private string json;
 
 
         [DllImport("user32.dll")]
@@ -208,7 +215,6 @@ namespace DemoPaint
                 _isTexting = true;
                 _isDrawing = false;
                 _painter = _prototypes[6];
-                
             }
             else
             {
@@ -216,6 +222,7 @@ namespace DemoPaint
                 _isDrawing = true;
             }
             _start = e.GetPosition(selectedLayer);
+
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -250,6 +257,8 @@ namespace DemoPaint
                 _painter.AddStrokeThickness(1);
                 _painter.AddStrokeDashArray(new double[] {4,4});
                 selectedLayer.Children.Add(_painter.Convert());
+
+                UndoBtn.IsEnabled = true;
                 
             }
             else
@@ -623,6 +632,7 @@ namespace DemoPaint
 
         private void RedrawCanvas()
         {
+            Debug.WriteLine(selectedPainter.Count);
             selectedLayer.Children.Clear();
             foreach (var item in selectedPainter.Reverse())
             {
@@ -633,6 +643,10 @@ namespace DemoPaint
                 else if (item is TextBlock textBlock)
                 {
                     selectedLayer.Children.Add(textBlock);
+                }
+                else if (item is UIElement uIElement)
+                {
+                    selectedLayer.Children.Add(uIElement);
                 }
             }
         }
@@ -653,6 +667,8 @@ namespace DemoPaint
         {
             Layers.Clear();
             _paintersLayer.Clear();
+            _undoStacksLayer.Clear();
+            _redoStacksLayer.Clear();
             selectedLayer = null;
             selectedPainter = null;
             _isDrawing = false;
@@ -667,6 +683,7 @@ namespace DemoPaint
             _allPainter.Clear();
             _painter = _prototypes[0];
             ChosenColor = Brushes.Black;
+            BackgroundColor = Brushes.Black;
             DrawArea.Children.Clear();
 
             string canvasName = "myCanvas";
@@ -690,7 +707,26 @@ namespace DemoPaint
 
             _paintersLayer.Add(new Stack<object>());
             selectedPainter = _paintersLayer[0];
+
+            _undoStacksLayer.Add(new Stack<object>());
+            _undoStack = _undoStacksLayer[0];
+
+            _redoStacksLayer.Add(new Stack<object>());
+            _redoStack = _redoStacksLayer[0];
+
+            _isTextFormatChosen = false;
+            _isTexting = false;
+            _isChosenColorClicked = true;
+            _isBackgroundColorClicked = false;
+            _isBackgrounFillCheckBox = false;
+
+            StrokeTypeCB.SelectedIndex = 0;
+            StrokeThicknessCB.SelectedIndex = 0;
+            FontStyleCombobox.SelectedIndex = 0;
+            FontSizeCombobox.SelectedIndex = 0;
+            BackgrounFillCheckBox.IsChecked = false;
         }
+
 
         private void Save()
         {
@@ -735,12 +771,8 @@ namespace DemoPaint
                     }
 
                     var settings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects };
-                    _allPainter.Clear();
-                    foreach (var layer in Layers)
-                    {
-                        Canvas newCanvas = FindCanvasByName(layer);
-                        newCanvas.Children.Clear();
-                    }
+
+                    Restart();
 
                     List<IShape> containers = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
                     foreach (var item in containers)
@@ -752,6 +784,10 @@ namespace DemoPaint
                     {
                         var element = shape.Convert();
                         selectedLayer.Children.Add(element);
+                        selectedPainter.Push(element);
+                        _undoStack.Push(element);
+                        _redoStack.Clear();
+                        UpdateUndoRedoButtonState();
                     }
                 }
                 catch (Exception ex)
@@ -760,6 +796,7 @@ namespace DemoPaint
                 }
             }
         }
+
         #endregion
 
     }

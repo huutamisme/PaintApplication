@@ -770,14 +770,14 @@
                         </StackPanel>
                     </Border>
                     <StackPanel Orientation="Vertical">
-                        <ComboBox Width="100" Margin="0 5 0 0" SelectedIndex="0" SelectionChanged="StrokeThicknessCB_SelectionChanged">
+                        <ComboBox x:Name="StrokeThicknessCB" Width="100" Margin="0 5 0 0" SelectedIndex="0" SelectionChanged="StrokeThicknessCB_SelectionChanged">
                             <ComboBoxItem Content="1px" Style="{StaticResource CCBIStrokeThickness}"/>
                             <ComboBoxItem Content="3px" Style="{StaticResource CCBIStrokeThickness}"/>
                             <ComboBoxItem Content="5px" Style="{StaticResource CCBIStrokeThickness}"/>
                             <ComboBoxItem Content="8px" Style="{StaticResource CCBIStrokeThickness}"/>
                         </ComboBox>
 
-                        <ComboBox Width="100" Margin="0 15 0 0" SelectedIndex="0" SelectionChanged="StrokeTypeCB_SelectionChanged">
+                        <ComboBox x:Name="StrokeTypeCB" Width="100" Margin="0 15 0 0" SelectedIndex="0" SelectionChanged="StrokeTypeCB_SelectionChanged">
                             <ComboBoxItem Content="Solid" Style="{StaticResource CCBIStrokeType}"/>
                             <ComboBoxItem Content="Dash" Style="{StaticResource CCBIStrokeType}"/>
                             <ComboBoxItem Content="Dot" Style="{StaticResource CCBIStrokeType}"/>
