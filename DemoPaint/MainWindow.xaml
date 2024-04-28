@@ -9,7 +9,8 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         WindowStartupLocation="CenterScreen" WindowStyle="None"
         Loaded="Window_Loaded"
-        Title="Paint" Background="#202020" AllowsTransparency="True">
+        Title="Paint" Background="#202020" AllowsTransparency="True"
+        PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <Style x:Key="MenuItemCustomStyle" TargetType="MenuItem">
             <Setter Property="Height" Value="30"/>
@@ -590,7 +591,7 @@
                     <MenuItem x:Name="fileMenuItem" Tag="File" Style="{StaticResource MenuItemCustomStyle}" Click="MenuItem_Click">
                         <MenuItem.ContextMenu>
                             <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=fileMenuItem}" HorizontalOffset="5" VerticalOffset="70">
-                                <MenuItem Header="New" InputGestureText="Ctrl+N" Style="{StaticResource menuItemStyle}">
+                                <MenuItem Header="New" InputGestureText="Ctrl+N" Style="{StaticResource menuItemStyle}" Click="NewBtn_Click">
                                     <MenuItem.Icon>
                                         <materialDesign:PackIcon Kind="FilePlus"/>
                                     </MenuItem.Icon>
@@ -839,7 +840,7 @@
             <!--<materialDesign:PackIcon Kind="EyeOff" Foreground="White" Width="70" Height="10"/>-->
         </Grid>
 
-        <Grid x:Name="DrawArea" Grid.Row="3" Panel.ZIndex="0" Background="White">
+        <Grid Grid.Row="3" Panel.ZIndex="0" x:Name="DrawArea" Background="White">
             <!--<Canvas x:Name="myCanvas" Background="White" >
             </Canvas>-->
             <Canvas x:Name="tempCanvas"

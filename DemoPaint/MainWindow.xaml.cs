@@ -54,6 +54,7 @@ namespace DemoPaint
         Canvas selectedLayer;
         Stack<IShape> selectedPainter = new Stack<IShape>();
         bool _isDrawing = false;
+        bool _isTexting = false;
         Point _start;
         Point _end;
         int _strokeThickness;
@@ -251,6 +252,8 @@ namespace DemoPaint
         private void Text_Formatting_Click(object sender, RoutedEventArgs e)
         {
             textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
+            _isDrawing = false;
+            _isTexting = true;
         }
 
         private void LayerBtn_Click(object sender, RoutedEventArgs e)
@@ -273,76 +276,12 @@ namespace DemoPaint
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            // serialize to make the json file
-            var settings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.Objects
-            };
-
-            // convert to json with key - value
-            var serializeShapeList = JsonConvert.SerializeObject(_allPainter, settings);
-
-            // experience 
-            StringBuilder builder = new StringBuilder();
-            builder.Append(serializeShapeList).Append("\n");
-            string content = builder.ToString();
-
-            var saveDialog = new System.Windows.Forms.SaveFileDialog();
-
-            // custom filter: JSON
-            saveDialog.Filter = "JSON (*.json)|*.json";
-
-            if (saveDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string path = saveDialog.FileName;
-                File.WriteAllText(path, content);
-            }
+            Save();
         }
 
-        // không load được
         private void LoadBtn_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.OpenFileDialog();
-            dialog.Filter = "JSON (*.json)|*.json";
-
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                string path = dialog.FileName;
-
-                try
-                {
-                    string content = File.ReadAllText(path);
-
-                    if (content.Length == 0)
-                    {
-                        return;
-                    }
-
-                    var settings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects };
-                    _allPainter.Clear();
-                    foreach(var layer in Layers)
-                    {
-                        Canvas newCanvas = FindCanvasByName(layer);
-                        newCanvas.Children.Clear();
-                    }    
-
-                    List<IShape> containers = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
-                    foreach (var item in containers)
-                    {
-                        _allPainter.Add(item);
-                    }
-
-                    foreach (var shape in _allPainter)
-                    {
-                        var element = shape.Convert();
-                        selectedLayer.Children.Add(element);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error loading file: " + ex.Message);
-                }
-            }
+            Load();
         }
 
         private void UndoBtn_Click(object sender, RoutedEventArgs e)
@@ -381,7 +320,7 @@ namespace DemoPaint
 
             Canvas canvasToAdd = new Canvas();
             canvasToAdd.Name = canvasName;
-            Canvas.SetZIndex(canvasToAdd, Layers.Count());
+            Canvas.SetZIndex(canvasToAdd, Layers.Count() - 1);
             canvasToAdd.Background = Brushes.Transparent;
 
             Layers.Insert(0, canvasName);
@@ -416,6 +355,27 @@ namespace DemoPaint
                 btn.Tag = "Eye";
                 selectedLayer.Visibility = Visibility.Visible;
 
+            }
+        }
+
+        private void NewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Restart();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && Keyboard.IsKeyDown(Key.N))
+            {
+                Restart();
+            }
+            if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && Keyboard.IsKeyDown(Key.S))
+            {
+                Save();
+            }
+            if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && Keyboard.IsKeyDown(Key.L))
+            {
+                Load();
             }
         }
 
@@ -481,6 +441,117 @@ namespace DemoPaint
             return null;
         }
 
+        private void Restart()
+        {
+            Layers.Clear();
+            _paintersLayer.Clear();
+            selectedLayer = null;
+            selectedPainter = null;
+            _isDrawing = false;
+            _start = new Point();
+            _end = new Point();
+            _strokeThickness = 1;
+            _strokeType = new double[] { 1, 0 };
+            _list.Clear();
+            _undoStack.Clear();
+            _redoStack.Clear();
+            _lastElement = null;
+            _allPainter.Clear();
+            _painter = _prototypes[0];
+            ChosenColor = Brushes.Black;
+            DrawArea.Children.Clear();
+
+            string canvasName = "myCanvas";
+            Canvas canvasToAdd = new Canvas();
+            canvasToAdd.Name = canvasName;
+            canvasToAdd.Background = Brushes.White;
+            Canvas.SetZIndex(canvasToAdd, 0);
+            Layers.Add(canvasName);
+            DrawArea.Children.Add(canvasToAdd);
+            selectedLayer = FindCanvasByName("myCanvas");
+
+            canvasName = "tempCanvas";
+            canvasToAdd = new Canvas();
+            canvasToAdd.Name = canvasName;
+            canvasToAdd.Background = Brushes.Transparent;
+            Canvas.SetZIndex(canvasToAdd, 1);
+            canvasToAdd.MouseLeftButtonDown += (sender, e) => Canvas_MouseLeftButtonDown(sender, e);
+            canvasToAdd.MouseMove += (sender, e) => Canvas_MouseMove(sender, e);
+            canvasToAdd.MouseLeftButtonUp += (sender, e) => Canvas_MouseLeftButtonUp(sender, e);
+            DrawArea.Children.Add(canvasToAdd);
+
+            _paintersLayer.Add(new Stack<IShape>());
+            selectedPainter = _paintersLayer[0];
+        }
+
+        private void Save()
+        {
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            };
+
+            var serializeShapeList = JsonConvert.SerializeObject(_allPainter, settings);
+
+            StringBuilder builder = new StringBuilder();
+            builder.Append(serializeShapeList).Append("\n");
+            string content = builder.ToString();
+
+            var saveDialog = new System.Windows.Forms.SaveFileDialog();
+
+            saveDialog.Filter = "JSON (*.json)|*.json";
+
+            if (saveDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = saveDialog.FileName;
+                File.WriteAllText(path, content);
+            }
+        }
+
+        private void Load()
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = "JSON (*.json)|*.json";
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = dialog.FileName;
+
+                try
+                {
+                    string content = File.ReadAllText(path);
+
+                    if (content.Length == 0)
+                    {
+                        return;
+                    }
+
+                    var settings = new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects };
+                    _allPainter.Clear();
+                    foreach (var layer in Layers)
+                    {
+                        Canvas newCanvas = FindCanvasByName(layer);
+                        newCanvas.Children.Clear();
+                    }
+
+                    List<IShape> containers = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
+                    foreach (var item in containers)
+                    {
+                        _allPainter.Add(item);
+                    }
+
+                    foreach (var shape in _allPainter)
+                    {
+                        var element = shape.Convert();
+                        selectedLayer.Children.Add(element);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading file: " + ex.Message);
+                }
+            }
+        }
         #endregion
 
     }
