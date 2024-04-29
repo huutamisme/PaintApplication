@@ -22,6 +22,8 @@
     <ProjectReference Include="..\Main\Main.csproj" />
     <ProjectReference Include="..\MyArrowDown\MyArrowDown.csproj" />
     <ProjectReference Include="..\MyEllipse\MyEllipse.csproj" />
+    <ProjectReference Include="..\MyLine\MyLine.csproj" />
+    <ProjectReference Include="..\MyRectangle\MyRectangle.csproj" />
   </ItemGroup>
 
   <ItemGroup>
