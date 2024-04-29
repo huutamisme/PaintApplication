@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Main;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using Microsoft.VisualBasic.Logging;
+using System.Runtime.Intrinsics.X86;
 
 namespace DemoPaint
 {
@@ -86,11 +87,21 @@ namespace DemoPaint
         String textFontStyle;
         int textFontSize;
 
+        // memory
+
+        private List<IShape> _chosedShapes = new List<IShape>();
+
         List<UIElement> _list = new List<UIElement>();
         UIElement _lastElement;
         List<IShape> _prototypes = new List<IShape>();  //chứa tất cả các shape load từ file dll
         List<IShape> _allPainter = new List<IShape>(); // chứa tất cả những hình đã vẽ
         IShape _painter = null;
+
+        // for editing
+        private Boolean _isEdit = false;
+        private double editPreviousX = -1;
+        private double editPreviousY = -1;
+        private List<ControlPoint> _controlPoints = new List<ControlPoint>();
 
 
         [DllImport("user32.dll")]
@@ -223,12 +234,294 @@ namespace DemoPaint
                 _isTexting = false;
                 _isDrawing = true;
                 _start = e.GetPosition(selectedLayer);
+                _isDrawing = true;
+                Point pos = e.GetPosition(selectedLayer);
+                _painter.HandleStart(pos.X, pos.Y);
             }
+
 
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
+            bool isChange = false;
+            if (_chosedShapes.Count == 1)
+            {
+                CShape Cshape = (CShape)_chosedShapes[0];
+                Point currentPosition = e.GetPosition(selectedLayer);
+                for (int i = 0; i < _controlPoints.Count; i++)
+                {
+                    if (_controlPoints[i].isHovering(Cshape.getRotateAngle(), currentPosition.X, currentPosition.Y))
+                    {
+                        // xác định hướng mà con trỏ chuột sẽ mở rộng từ đỉnh đó để thể hiện hướng
+                        switch (_controlPoints[i].getEdge(Cshape.getRotateAngle()))
+                        {
+                            case "topleft" or "bottomright":
+                                {
+                                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeNWSE;
+                                    break;
+                                }
+                            case "topright" or "bottomleft":
+                                {
+                                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeNESW;
+                                    break;
+                                }
+                            case "top" or "bottom":
+                                {
+                                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeNS;
+                                    break;
+                                }
+                            case "left" or "right":
+                                {
+                                    Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
+                                    break;
+                                }
+                        }
+                        if (_controlPoints[i].type == "move" || _controlPoints[i].type == "rotate")
+                        {
+                            Mouse.OverrideCursor = System.Windows.Input.Cursors.Hand;
+                        }
+
+                        isChange = true;
+                        break;
+                    }
+                };
+
+                if (!isChange)
+                {
+                    Mouse.OverrideCursor = null;
+                }
+            }
+            if (this._isEdit)
+            {
+                if (_chosedShapes.Count < 1)
+                    return;
+
+                if (Mouse.LeftButton != MouseButtonState.Pressed)
+                    return;
+
+                Point curPos = e.GetPosition(selectedLayer);
+                double Dx, Dy;
+
+                if (editPreviousX == -1 || editPreviousY == -1)
+                {
+                    editPreviousX = curPos.X;
+                    editPreviousY = curPos.Y;
+                    return;
+                }
+
+                // distance of x and y of new coordinate compared to the old one
+                Dx = curPos.X - editPreviousX;
+                Dy = curPos.Y - editPreviousY;
+
+                // for multiple chosed, move each of the shape to the relative position
+                if (_chosedShapes.Count > 1)
+                {
+                    _chosedShapes.ForEach(E =>
+                    {
+                        CShape C = (CShape)E;
+
+                        C.LeftTop.X += Dx;
+                        C.LeftTop.Y += Dy;
+                        C.RightBottom.X += Dx;
+                        C.RightBottom.Y += Dy;
+                    });
+                }
+                else
+                {
+                    CShape shape = (CShape)_chosedShapes[0];
+                    _controlPoints.ForEach(ctrlPoint =>
+                    {
+                        List<cord> edges = new List<cord>()
+                        {
+                        new cord(shape.LeftTop),      // 0 xt
+                        new cordY(shape.LeftTop),      // 1 yt
+                        new cord(shape.RightBottom),  // 2 xb
+                        new cordY(shape.RightBottom)   // 3 yb
+						};
+
+                        List<int> rotate0 = new List<int>
+                        {
+                        0, 1, 2, 3
+                        };
+                        List<int> rotate90 = new List<int>
+                        {
+                        //xt, yt, xb, xb
+                        3, 0, 1, 2
+                        };
+                        List<int> rotate180 = new List<int>
+                        {
+                        //xt, yt, xb, xb
+                        2, 3, 0, 1
+                        };
+                        List<int> rotate270 = new List<int>
+                        {
+                        //xt, yt, xb, xb
+                        1, 2, 3, 0
+                        };
+
+                        List<List<int>> rotateList = new List<List<int>>()
+                        {
+                        rotate0,
+                        rotate90,
+                        rotate180,
+                        rotate270
+                        };
+
+                        double rot = shape.getRotateAngle();
+                        int index = 0;
+
+                        if (rot > 0)
+                            while (true)
+                            {
+                                rot -= 90;
+                                if (rot < 0)
+                                    break;
+                                index++;
+
+                                if (index == 4)
+                                    index = 0;
+                            }
+                        else
+                            while (true)
+                            {
+                                rot += 90;
+                                if (rot > 0)
+                                    break;
+                                index--;
+                                if (index == -1)
+                                    index = 3;
+                            };
+
+                        if (ctrlPoint.isHovering(shape.getRotateAngle(), curPos.X, curPos.Y))
+                        {
+                            switch (ctrlPoint.type)
+                            {
+                                case "rotate":
+                                    {
+                                        const double RotateFactor = 180.0 / 270;
+                                        double alpha = Math.Abs(Dx + Dy);
+
+                                        Point2D v = shape.getCenterPoint();
+
+                                        double xv = editPreviousX - v.X;
+                                        double yv = editPreviousY - v.Y;
+
+                                        double angle = Math.Atan2(Dx * yv - Dy * xv, Dx * xv + Dy * yv);
+
+                                        if (angle > 0)
+                                            shape.setRotateAngle(shape.getRotateAngle() - alpha * RotateFactor);
+                                        else
+                                            shape.setRotateAngle(shape.getRotateAngle() + alpha * RotateFactor);
+                                        break;
+                                    }
+
+                                case "move":
+                                    {
+                                        shape.LeftTop.X = shape.LeftTop.X + Dx;
+                                        shape.LeftTop.Y = shape.LeftTop.Y + Dy;
+                                        shape.RightBottom.X = shape.RightBottom.X + Dx;
+                                        shape.RightBottom.Y = shape.RightBottom.Y + Dy;
+                                        break;
+                                    }
+
+                                case "diag":
+                                    {
+                                        Point2D handledXY = ctrlPoint.handle(shape.getRotateAngle(), Dx, Dy);
+
+                                        switch (index)
+                                        {
+                                            case 1:
+                                                handledXY.X *= -1;
+                                                break;
+                                            case 2:
+                                                {
+                                                    handledXY.Y *= -1;
+                                                    handledXY.X *= -1;
+                                                    break;
+                                                }
+                                            case 3:
+                                                {
+                                                    handledXY.Y *= -1;
+                                                    break;
+                                                }
+                                        }
+
+
+                                        switch (ctrlPoint.getEdge(shape.getRotateAngle()))
+                                        {
+                                            case "topleft":
+                                                {
+                                                    edges[rotateList[index][0]].setCord(handledXY.X);
+                                                    edges[rotateList[index][1]].setCord(handledXY.Y);
+                                                    edges[rotateList[index][2]].setCord(-handledXY.X);
+                                                    edges[rotateList[index][3]].setCord(-handledXY.Y);
+                                                    break;
+                                                }
+                                            case "topright":
+                                                {
+                                                    edges[rotateList[index][2]].setCord(handledXY.X);
+                                                    edges[rotateList[index][1]].setCord(handledXY.Y);
+                                                    edges[rotateList[index][0]].setCord(-handledXY.X);
+                                                    edges[rotateList[index][3]].setCord(-handledXY.Y);
+                                                    break;
+                                                }
+                                            case "bottomright":
+                                                {
+                                                    edges[rotateList[index][2]].setCord(handledXY.X);
+                                                    edges[rotateList[index][3]].setCord(handledXY.Y);
+                                                    edges[rotateList[index][0]].setCord(-handledXY.X);
+                                                    edges[rotateList[index][1]].setCord(-handledXY.Y);
+                                                    break;
+                                                }
+                                            case "bottomleft":
+                                                {
+                                                    edges[rotateList[index][0]].setCord(handledXY.X);
+                                                    edges[rotateList[index][3]].setCord(handledXY.Y);
+                                                    edges[rotateList[index][2]].setCord(-handledXY.X);
+                                                    edges[rotateList[index][1]].setCord(-handledXY.Y);
+                                                    break;
+                                                }
+                                            case "right":
+                                                {
+                                                    edges[rotateList[index][2]].setCord(handledXY.X);
+                                                    edges[rotateList[index][0]].setCord(-handledXY.X);
+                                                    break;
+                                                }
+                                            case "left":
+                                                {
+                                                    edges[rotateList[index][0]].setCord(handledXY.X);
+                                                    edges[rotateList[index][2]].setCord(-handledXY.X);
+                                                    break;
+                                                }
+                                            case "top":
+                                                {
+                                                    edges[rotateList[index][1]].setCord(handledXY.Y);
+                                                    edges[rotateList[index][3]].setCord(-handledXY.Y);
+                                                    break;
+                                                }
+                                            case "bottom":
+                                                {
+                                                    edges[rotateList[index][3]].setCord(handledXY.Y);
+                                                    edges[rotateList[index][1]].setCord(-handledXY.Y);
+                                                    break;
+                                                }
+                                        }
+                                        break;
+                                    }
+                            }
+                        }
+
+                    });
+                }
+
+
+                editPreviousX = curPos.X;
+                editPreviousY = curPos.Y;
+
+                RedrawCanvas();
+                return;
+            }
             if (_isDrawing)
             {
                 _end = e.GetPosition(selectedLayer);
@@ -267,18 +560,52 @@ namespace DemoPaint
             {
                 Mouse.OverrideCursor = null;
             }
+
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if(_isDrawing)
+            if (this._prototypes.Count == 0)
+                return;
+            _isDrawing = false;
+            if (this._isEdit)
             {
-                _isDrawing = false;
-                selectedPainter.Push((IShape)_painter.Clone());
-                _allPainter.Add((IShape)_painter.Clone());
-                _undoStack.Push((IShape)_painter.Clone());
-                _redoStack.Clear();
-            }    
+                if (e.ChangedButton != MouseButton.Left)
+                    return;
+
+                Point curPosition = e.GetPosition(selectedLayer);
+                for (int i = this._allPainter.Count - 1; i >= 0; i--)
+                {
+                    CShape temp = (CShape)_allPainter[i];
+                    if (temp.isHovering(curPosition.X, curPosition.Y))
+                    {
+                        if (Keyboard.IsKeyDown(Key.LeftCtrl))
+                        {
+                            if (!_chosedShapes.Contains(_allPainter[i]))
+                            {
+                                this._chosedShapes.Add(_allPainter[i]);
+                            }
+                            else
+                            {
+                                this._chosedShapes.Remove(_allPainter[i]);
+                            }
+                        }
+                        else
+                        {
+                            _chosedShapes.Clear();
+                            this._chosedShapes.Add(_allPainter[i]);
+                        }
+                        RedrawCanvas();
+                        break;
+                    }
+                }
+
+                this.editPreviousX = -1;
+                this.editPreviousY = -1;
+
+                return;
+            }
+   
             if (_isTexting)
             {
                 _isTexting = false;
@@ -318,6 +645,23 @@ namespace DemoPaint
 
                 textBox.Focus();
             }
+
+            Point pos = e.GetPosition(selectedLayer);
+            _painter.HandleEnd(pos.X, pos.Y);
+
+            // Ddd to shapes list & save it color + thickness
+            _painter.Brush = ChosenColor;
+            _painter.Thickness = _strokeThickness;
+            _painter.StrokeDash = _strokeType   ;
+            selectedPainter.Push((IShape)_painter.Clone());
+            _allPainter.Add((IShape)_painter.Clone());
+            _undoStack.Push((IShape)_painter.Clone());
+            _redoStack.Clear();
+
+            // Move to new preview 
+            //_preview = _factory.CreateShape(_selectedShapeName);
+
+            RedrawCanvas();
         }
 
         private void pnlControlBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -635,12 +979,10 @@ namespace DemoPaint
         private void RedrawCanvas()
         {
             selectedLayer.Children.Clear();
-            Trace.WriteLine("Start");
             foreach (var item in selectedPainter.Reverse())
             {
                 if (item is IShape shape)
                 {
-                    Trace.WriteLine(shape.Thickness);
                     selectedLayer.Children.Add(shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush));
                 }
                 else if (item is TextBlock textBlock)
@@ -652,7 +994,27 @@ namespace DemoPaint
                     selectedLayer.Children.Add(uIElement);
                 }
             }
-            Trace.WriteLine("End");
+
+
+            if (_isEdit && _chosedShapes.Count > 0)
+            {
+                _chosedShapes.ForEach(shape =>
+                {
+                    CShape cShape = (CShape)shape;
+                    Trace.WriteLine(cShape.getRotateAngle());
+                    selectedLayer.Children.Add(cShape.controlOutline());
+
+                    if (_chosedShapes.Count == 1)
+                    {
+                        List<ControlPoint> controlPoints = cShape.GetControlPoints();
+                        this._controlPoints = controlPoints;
+                        controlPoints.ForEach(Ctrl =>
+                        {
+                            selectedLayer.Children.Add(Ctrl.drawPoint(cShape.getRotateAngle(), cShape.getCenterPoint()));
+                        });
+                    }
+                });
+            }
 
         }
 
@@ -804,5 +1166,19 @@ namespace DemoPaint
 
         #endregion
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this._isEdit = !this._isEdit;
+            if (_isEdit)
+            {
+                this.Cursor = System.Windows.Input.Cursors.Hand;
+            }
+            else
+            {
+                this.Cursor = System.Windows.Input.Cursors.Arrow;
+            }
+            if (!this._isEdit)
+                this._chosedShapes.Clear();
+        }
     }
 }

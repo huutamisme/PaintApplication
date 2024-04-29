@@ -3,6 +3,7 @@ using System.Windows.Media;
 using System.Windows;
 using System.Windows.Shapes;
 using Main;
+using System.Windows.Media.Media3D;
 
 namespace MyArrowDown
 {
@@ -44,6 +45,8 @@ namespace MyArrowDown
 
         public UIElement Draw(int strokeThickness, DoubleCollection strokeDashArray, SolidColorBrush solidcolorbrush)
         {
+            double width = Math.Abs(_rightBottom.X - _leftTop.X);
+            double height = Math.Abs(_rightBottom.Y - _leftTop.Y);
             double centerX = (_leftTop.X + _rightBottom.X) / 2;
             double centerY = (_leftTop.Y + _rightBottom.Y) / 2;
             double arrowHeight = Math.Abs(_leftTop.Y - _rightBottom.Y) / 2;
@@ -75,6 +78,11 @@ namespace MyArrowDown
             path.Stroke = solidcolorbrush;
             path.StrokeThickness = strokeThickness;
             path.StrokeDashArray = strokeDashArray;
+
+            RotateTransform transform = new RotateTransform(this._rotateAngle);
+            transform.CenterX = width * 1.0 / 2;
+            transform.CenterY = height * 1.0 / 2;
+            path.RenderTransform = transform;
 
             return path;
         }
