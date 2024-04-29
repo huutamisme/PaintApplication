@@ -1,52 +1,52 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
-using Shapes;
 using System.Windows.Shapes;
+using Main;
 
 namespace MyArrowDown
 {
-    public class MyArrowDown : IShape
+    public class MyArrowDown : CShape, IShape
     {
-        public Point _topLeft;
-        public Point _rightBottom;
-        public SolidColorBrush _brush;
-        public int _strokeThickness;
-        public double[] _strokeDashArray;
+        public SolidColorBrush Brush { get; set; }
+        public int Thickness { get; set; }
+        public DoubleCollection StrokeDash { get; set; }
         public string Name => "ArrowDown";
-        public void AddFirst(Point point)
+        public string Icon => "Images/pentagon.png";
+        public void HandleEnd(double x, double y)
         {
-            _topLeft = point;
+            _rightBottom.X = x;
+            _rightBottom.Y = y;
         }
 
-        public void AddSecond(Point point)
+        public void HandleStart(double x, double y)
         {
-            _rightBottom = point;
-        }
-        public void AddColor(SolidColorBrush solidcolorbrush)
-        {
-            _brush = solidcolorbrush;
+            _leftTop.X = x;
+            _leftTop.Y = y;
         }
 
-        public void AddStrokeThickness(int strokeThickness)
+        public IShape Clone()
         {
-            _strokeThickness = strokeThickness;
+            MyArrowDown temp = new MyArrowDown();
+
+            temp.LeftTop = this._leftTop.deepCopy();
+            temp.RightBottom = this._rightBottom.deepCopy();
+            temp._rotateAngle = this._rotateAngle;
+            temp.Thickness = this.Thickness;
+
+            if (this.Brush != null)
+                temp.Brush = this.Brush.Clone();
+
+            if (this.StrokeDash != null)
+                temp.StrokeDash = this.StrokeDash.Clone();
+            return temp;
         }
 
-        public void AddStrokeDashArray(double[] strokeDashArray)
+        public UIElement Draw(int strokeThickness, DoubleCollection strokeDashArray, SolidColorBrush solidcolorbrush)
         {
-            _strokeDashArray = strokeDashArray;
-        }
-        public object Clone()
-        {
-            return MemberwiseClone();
-        }
-
-        public UIElement Convert()
-        {
-            double centerX = (_topLeft.X + _rightBottom.X) / 2;
-            double centerY = (_topLeft.Y + _rightBottom.Y) / 2;
-            double arrowHeight = Math.Abs(_topLeft.Y - _rightBottom.Y) / 2;
+            double centerX = (_leftTop.X + _rightBottom.X) / 2;
+            double centerY = (_leftTop.Y + _rightBottom.Y) / 2;
+            double arrowHeight = Math.Abs(_leftTop.Y - _rightBottom.Y) / 2;
 
             PathFigure arrow = new PathFigure();
             arrow.StartPoint = new Point(centerX, centerY + arrowHeight); 
@@ -72,11 +72,28 @@ namespace MyArrowDown
 
             Path path = new Path();
             path.Data = geometry;
-            path.Stroke = _brush;
-            path.StrokeThickness = _strokeThickness;
-            path.StrokeDashArray = new DoubleCollection(_strokeDashArray);
+            path.Stroke = solidcolorbrush;
+            path.StrokeThickness = strokeThickness;
+            path.StrokeDashArray = strokeDashArray;
 
             return path;
+        }
+
+        override public CShape deepCopy()
+        {
+            MyArrowDown temp = new MyArrowDown();
+
+            temp.LeftTop = this._leftTop.deepCopy();
+            temp.RightBottom = this._rightBottom.deepCopy();
+            temp._rotateAngle = this._rotateAngle;
+            temp.Thickness = this.Thickness;
+
+            if (this.Brush != null)
+                temp.Brush = this.Brush.Clone();
+
+            if (this.StrokeDash != null)
+                temp.StrokeDash = this.StrokeDash.Clone();
+            return temp;
         }
 
     }

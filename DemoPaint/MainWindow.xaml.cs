@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Shapes;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
@@ -13,6 +12,9 @@ using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using System.Text;
 using System.Windows.Shapes;
+using Main;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using Microsoft.VisualBasic.Logging;
 
 namespace DemoPaint
 {
@@ -29,7 +31,7 @@ namespace DemoPaint
             ChosenColor = Brushes.Black;
             BackgroundColor = Brushes.Black;
             _strokeThickness = 1;
-            _strokeType = new double[] { 1, 0 };
+            _strokeType = new DoubleCollection() { 1, 0 };
 
             string canvasName = "myCanvas";
             Canvas canvasToAdd = new Canvas();
@@ -80,7 +82,7 @@ namespace DemoPaint
         Point _start;
         Point _end;
         int _strokeThickness;
-        double[] _strokeType;
+        DoubleCollection _strokeType;
         String textFontStyle;
         int textFontSize;
 
@@ -220,8 +222,8 @@ namespace DemoPaint
             {
                 _isTexting = false;
                 _isDrawing = true;
+                _start = e.GetPosition(selectedLayer);
             }
-            _start = e.GetPosition(selectedLayer);
 
         }
 
@@ -236,12 +238,12 @@ namespace DemoPaint
                 {
                     _end = new Point(_start.X + (_end.Y - _start.Y), _start.Y + (_end.Y - _start.Y));
                 }
-                _painter.AddFirst(_start);
-                _painter.AddSecond(_end);
-                _painter.AddColor(ChosenColor);
-                _painter.AddStrokeThickness(_strokeThickness);
-                _painter.AddStrokeDashArray(_strokeType);
-                selectedLayer.Children.Add(_painter.Convert());
+                _painter.Brush = ChosenColor;
+                _painter.StrokeDash = _strokeType;
+                _painter.Thickness = _strokeThickness;
+                _painter.HandleEnd(_end.X, _end.Y);
+                _painter.HandleStart(_start.X, _start.Y);
+                selectedLayer.Children.Add(_painter.Draw(_strokeThickness, _strokeType, ChosenColor));
                 
                 UndoBtn.IsEnabled = true;
             }
@@ -251,12 +253,12 @@ namespace DemoPaint
                 _end = e.GetPosition(selectedLayer);
                 selectedLayer.Children.Clear();
                 RedrawCanvas();
-                _painter.AddFirst(_start);
-                _painter.AddSecond(_end);
-                _painter.AddColor(Brushes.Black);
-                _painter.AddStrokeThickness(1);
-                _painter.AddStrokeDashArray(new double[] {4,4});
-                selectedLayer.Children.Add(_painter.Convert());
+                _painter.Brush = ChosenColor;
+                _painter.StrokeDash = _strokeType;
+                _painter.Thickness = _strokeThickness;
+                _painter.HandleEnd(_end.X, _end.Y);
+                _painter.HandleStart(_start.X, _start.Y);
+                selectedLayer.Children.Add(_painter.Draw(1, new  DoubleCollection { 4, 4 }, Brushes.Black));
 
                 UndoBtn.IsEnabled = true;
                 
@@ -593,16 +595,16 @@ namespace DemoPaint
             switch (selectedStrokeType)
             {
                 case "Solid":
-                    _strokeType = new double[] { 1, 0 };
+                    _strokeType = new DoubleCollection { 1, 0 };
                     break;
                 case "Dash":
-                    _strokeType = new double[] { 5, 3 };
+                    _strokeType = new DoubleCollection { 5, 3 };
                     break;
                 case "Dot":
-                    _strokeType = new double[] { 1, 1 };
+                    _strokeType = new DoubleCollection { 1, 1 };
                     break;
                 case "DashDotDot":
-                    _strokeType = new double[] { 5, 3, 1, 1, 1, 1 };
+                    _strokeType = new DoubleCollection { 5, 3, 1, 1, 1, 1 };
                     break;
                 default:
                     break;
@@ -632,13 +634,14 @@ namespace DemoPaint
 
         private void RedrawCanvas()
         {
-            Debug.WriteLine(selectedPainter.Count);
             selectedLayer.Children.Clear();
+            Trace.WriteLine("Start");
             foreach (var item in selectedPainter.Reverse())
             {
                 if (item is IShape shape)
                 {
-                    selectedLayer.Children.Add(shape.Convert());
+                    Trace.WriteLine(shape.Thickness);
+                    selectedLayer.Children.Add(shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush));
                 }
                 else if (item is TextBlock textBlock)
                 {
@@ -649,6 +652,8 @@ namespace DemoPaint
                     selectedLayer.Children.Add(uIElement);
                 }
             }
+            Trace.WriteLine("End");
+
         }
 
         private Canvas FindCanvasByName(string canvasName)
@@ -675,7 +680,7 @@ namespace DemoPaint
             _start = new Point();
             _end = new Point();
             _strokeThickness = 1;
-            _strokeType = new double[] { 1, 0 };
+            _strokeType = new DoubleCollection() { 1, 0 };
             _list.Clear();
             _undoStack.Clear();
             _redoStack.Clear();
@@ -782,7 +787,7 @@ namespace DemoPaint
 
                     foreach (var shape in _allPainter)
                     {
-                        var element = shape.Convert();
+                        var element = shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush);
                         selectedLayer.Children.Add(element);
                         selectedPainter.Push(element);
                         _undoStack.Push(element);

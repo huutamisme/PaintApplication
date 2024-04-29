@@ -5,8 +5,6 @@ VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoPaint", "DemoPaint\DemoPaint.csproj", "{62A7ECC8-DA0C-4740-9B9D-06CC7E5D9719}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IShape", "IShape\IShape.csproj", "{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLine", "MyLine\MyLine.csproj", "{CB90CC34-AC73-441E-954F-FAA53913077E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyRectangle", "MyRectangle\MyRectangle.csproj", "{B4737712-B163-4AA9-8FDE-D6D4D19F69FA}"
@@ -14,17 +12,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyEllipse", "MyEllipse\MyEllipse.csproj", "{51F43469-F820-4F02-9505-EF7744B8F804}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyStar", "MyStar\MyStar.csproj", "{2BA32185-77B2-470F-BAF8-B6556DDAD2B6}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424} = {6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyArrowUp", "MyArrowUp\MyArrowUp.csproj", "{13B22D60-AE4D-4BB5-B257-BAA9131B87EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyArrowDown", "MyArrowDown\MyArrowDown.csproj", "{F93220F7-B216-423E-9C30-19757479EBF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyArrowDown", "MyArrowDown\MyArrowDown.csproj", "{F93220F7-B216-423E-9C30-19757479EBF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyArrowLeft", "MyArrowLeft\MyArrowLeft.csproj", "{BB34D74B-0B7D-4013-9412-271A0938F178}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyArrowLeft", "MyArrowLeft\MyArrowLeft.csproj", "{BB34D74B-0B7D-4013-9412-271A0938F178}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyArrowRight", "MyArrowRight\MyArrowRight.csproj", "{F8868BB1-13E6-467D-8311-0C720EE235C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyArrowRight", "MyArrowRight\MyArrowRight.csproj", "{F8868BB1-13E6-467D-8311-0C720EE235C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main", "Main\Main.csproj", "{8583B840-896A-44A0-B593-1719F701FBF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,10 +33,6 @@ Global
 		{62A7ECC8-DA0C-4740-9B9D-06CC7E5D9719}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62A7ECC8-DA0C-4740-9B9D-06CC7E5D9719}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62A7ECC8-DA0C-4740-9B9D-06CC7E5D9719}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6897A62C-BBD2-4AA7-A4F4-5EEA6F898424}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB90CC34-AC73-441E-954F-FAA53913077E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB90CC34-AC73-441E-954F-FAA53913077E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB90CC34-AC73-441E-954F-FAA53913077E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -72,6 +65,10 @@ Global
 		{F8868BB1-13E6-467D-8311-0C720EE235C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8868BB1-13E6-467D-8311-0C720EE235C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8868BB1-13E6-467D-8311-0C720EE235C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8583B840-896A-44A0-B593-1719F701FBF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8583B840-896A-44A0-B593-1719F701FBF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8583B840-896A-44A0-B593-1719F701FBF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8583B840-896A-44A0-B593-1719F701FBF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
