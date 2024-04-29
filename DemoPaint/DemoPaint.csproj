@@ -19,7 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Main\Main.csproj" />
     <ProjectReference Include="..\MyArrowDown\MyArrowDown.csproj" />
+    <ProjectReference Include="..\MyEllipse\MyEllipse.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -73,6 +73,7 @@ namespace MyArrowDown
             PathGeometry geometry = new PathGeometry();
             geometry.Figures.Add(arrow);
 
+
             Path path = new Path();
             path.Data = geometry;
             path.Stroke = solidcolorbrush;

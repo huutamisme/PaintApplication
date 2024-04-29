@@ -399,6 +399,7 @@ namespace DemoPaint
                             {
                                 case "rotate":
                                     {
+                                        Trace.WriteLine("Rotating");
                                         const double RotateFactor = 180.0 / 270;
                                         double alpha = Math.Abs(Dx + Dy);
 
@@ -410,9 +411,15 @@ namespace DemoPaint
                                         double angle = Math.Atan2(Dx * yv - Dy * xv, Dx * xv + Dy * yv);
 
                                         if (angle > 0)
+                                        {
+                                            Trace.WriteLine("The shape" + shape.getRotateAngle());
                                             shape.setRotateAngle(shape.getRotateAngle() - alpha * RotateFactor);
+                                        }
                                         else
+                                        {
+                                            Trace.WriteLine("The shape" + shape.getRotateAngle());
                                             shape.setRotateAngle(shape.getRotateAngle() + alpha * RotateFactor);
+                                        }
                                         break;
                                     }
 
@@ -535,7 +542,6 @@ namespace DemoPaint
                 _painter.StrokeDash = _strokeType;
                 _painter.Thickness = _strokeThickness;
                 _painter.HandleEnd(_end.X, _end.Y);
-                _painter.HandleStart(_start.X, _start.Y);
                 selectedLayer.Children.Add(_painter.Draw(_strokeThickness, _strokeType, ChosenColor));
                 
                 UndoBtn.IsEnabled = true;
@@ -574,26 +580,26 @@ namespace DemoPaint
                     return;
 
                 Point curPosition = e.GetPosition(selectedLayer);
-                for (int i = this._allPainter.Count - 1; i >= 0; i--)
+                foreach (var item in selectedPainter)
                 {
-                    CShape temp = (CShape)_allPainter[i];
+                    CShape temp = (CShape)item;
                     if (temp.isHovering(curPosition.X, curPosition.Y))
                     {
                         if (Keyboard.IsKeyDown(Key.LeftCtrl))
                         {
-                            if (!_chosedShapes.Contains(_allPainter[i]))
+                            if (!_chosedShapes.Contains((IShape)item))
                             {
-                                this._chosedShapes.Add(_allPainter[i]);
+                                this._chosedShapes.Add((IShape)item);
                             }
                             else
                             {
-                                this._chosedShapes.Remove(_allPainter[i]);
+                                this._chosedShapes.Remove((IShape)item);
                             }
                         }
                         else
                         {
                             _chosedShapes.Clear();
-                            this._chosedShapes.Add(_allPainter[i]);
+                            this._chosedShapes.Add((IShape)item);
                         }
                         RedrawCanvas();
                         break;
@@ -605,7 +611,6 @@ namespace DemoPaint
 
                 return;
             }
-   
             if (_isTexting)
             {
                 _isTexting = false;
@@ -652,14 +657,11 @@ namespace DemoPaint
             // Ddd to shapes list & save it color + thickness
             _painter.Brush = ChosenColor;
             _painter.Thickness = _strokeThickness;
-            _painter.StrokeDash = _strokeType   ;
+            _painter.StrokeDash = _strokeType;
             selectedPainter.Push((IShape)_painter.Clone());
             _allPainter.Add((IShape)_painter.Clone());
             _undoStack.Push((IShape)_painter.Clone());
             _redoStack.Clear();
-
-            // Move to new preview 
-            //_preview = _factory.CreateShape(_selectedShapeName);
 
             RedrawCanvas();
         }
@@ -1001,9 +1003,8 @@ namespace DemoPaint
                 _chosedShapes.ForEach(shape =>
                 {
                     CShape cShape = (CShape)shape;
-                    Trace.WriteLine(cShape.getRotateAngle());
                     selectedLayer.Children.Add(cShape.controlOutline());
-
+                    Trace.WriteLine(cShape.getRotateAngle());
                     if (_chosedShapes.Count == 1)
                     {
                         List<ControlPoint> controlPoints = cShape.GetControlPoints();
