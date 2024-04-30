@@ -882,7 +882,7 @@ namespace DemoPaint
             {
                 handleCopy();
             }
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown((Key)Key.V))
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown((Key)Key.X))
             {
                 handleCut();
             }
