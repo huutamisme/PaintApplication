@@ -121,6 +121,33 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
+                        <Border x:Name="LayerBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsLayerBtnClicked}" Value="True">
+                                <Setter TargetName="LayerBtnBorder" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="LayerBtnBorder" Property="BorderThickness" Value="1"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolbarAddTextBtn" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
                         <Border x:Name="colorBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
                             <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Border>
@@ -128,10 +155,37 @@
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="#333333"/>
                             </Trigger>
-                            <Trigger Property="IsFocused" Value="True">
+                            <DataTrigger Binding="{Binding IsTextFormatChosen}" Value="True">
                                 <Setter TargetName="colorBtnBorder" Property="BorderBrush" Value="#A57BAC"/>
                                 <Setter TargetName="colorBtnBorder" Property="BorderThickness" Value="1"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ToolbarEditShapeBtn" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="EditShapeBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
                             </Trigger>
+                            <DataTrigger Binding="{Binding IsEdit}" Value="True">
+                                <Setter TargetName="EditShapeBtnBorder" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="EditShapeBtnBorder" Property="BorderThickness" Value="1"/>
+                            </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -706,7 +760,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
-                    <Button Style="{StaticResource ToolbarLayerBtn}" Tag="Pencil" Foreground="{StaticResource color6}" Click="Button_Click"/>
+                    <Button Style="{StaticResource ToolbarEditShapeBtn}" Tag="Pencil" Foreground="{StaticResource color6}" Click="EditShapeBtn_Click"/>
                     <Button Style="{StaticResource ToolbarLayerBtn}" Tag="Eraser" Foreground="{StaticResource color1}"/>
                     <Popup x:Name="textFormattingPopup" PlacementTarget="{Binding ElementName=ToolBar}" IsOpen="False">
                         <Border Background="Black" BorderBrush="Transparent" BorderThickness="0" CornerRadius="5" Height="40">
@@ -747,7 +801,7 @@
                             </Grid>
                         </Border>
                     </Popup>
-                    <Button Style="{StaticResource ToolbarLayerBtn}" Tag="abc" Foreground="White" Click="Text_Formatting_Click"/>
+                    <Button Style="{StaticResource ToolbarAddTextBtn}" Tag="abc" Foreground="White" Click="Text_Formatting_Click"/>
                 </StackPanel>
                 <Label Grid.Row="1" Content="Tools" Foreground="White" HorizontalAlignment="Center"/>
             </Grid>
