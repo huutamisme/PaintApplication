@@ -19,15 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IShape\IShape.csproj" />
+    <ProjectReference Include="..\Main\Main.csproj" />
     <ProjectReference Include="..\MyArrowDown\MyArrowDown.csproj" />
-    <ProjectReference Include="..\MyArrowLeft\MyArrowLeft.csproj" />
-    <ProjectReference Include="..\MyArrowRight\MyArrowRight.csproj" />
-    <ProjectReference Include="..\MyArrowUp\MyArrowUp.csproj" />
     <ProjectReference Include="..\MyEllipse\MyEllipse.csproj" />
     <ProjectReference Include="..\MyLine\MyLine.csproj" />
     <ProjectReference Include="..\MyRectangle\MyRectangle.csproj" />
-    <ProjectReference Include="..\MyStar\MyStar.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,59 +1,67 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
-using Shapes;
 using System.Windows.Shapes;
+using Main;
 
 namespace MyRectangle
 {
-    public class MyRectangle : IShape
+    public class MyRectangle : CShape, IShape
     {
-        public Point _topLeft;
-        public Point _rightBottom;
-        public SolidColorBrush _brush;
-        public int _strokeThickness;
-        public double[] _strokeDashArray;
+        public SolidColorBrush Brush { get; set; }
+        public int Thickness { get; set; }
+        public DoubleCollection StrokeDash { get; set; }
         public string Name => "Rectangle";
-        public void AddFirst(Point point)
+        public string Icon => "Images/pentagon.png";
+
+        public void HandleEnd(double x, double y)
         {
-            _topLeft = point;
+            _rightBottom.X = x;
+            _rightBottom.Y = y;
         }
 
-        public void AddSecond(Point point)
+        public void HandleStart(double x, double y)
         {
-            _rightBottom = point;
-        }
-        public void AddColor(SolidColorBrush solidcolorbrush)
-        {
-            _brush = solidcolorbrush;
+            _leftTop.X = x;
+            _leftTop.Y = y;
         }
 
-        public void AddStrokeThickness(int strokeThickness)
+        public IShape Clone()
         {
-            _strokeThickness = strokeThickness;
+            MyRectangle temp = new MyRectangle();
+
+            temp.LeftTop = this._leftTop.deepCopy();
+            temp.RightBottom = this._rightBottom.deepCopy();
+            temp._rotateAngle = this._rotateAngle;
+            temp.Thickness = this.Thickness;
+
+            if (this.Brush != null)
+                temp.Brush = this.Brush.Clone();
+
+            if (this.StrokeDash != null)
+                temp.StrokeDash = this.StrokeDash.Clone();
+            return temp;
         }
 
-        public void AddStrokeDashArray(double[] strokeDashArray)
-        {
-            _strokeDashArray = strokeDashArray;
-        }
-        public object Clone()
-        {
-            return MemberwiseClone();
-        }
-
-        public UIElement Convert()
+        public UIElement Draw(int strokeThickness, DoubleCollection strokeDashArray, SolidColorBrush solidcolorbrush)
         {
             var item = new Rectangle()
             {   // TODO: end luon luon lon hon start
-                Width = Math.Abs(_rightBottom.X - _topLeft.X),
-                Height = Math.Abs(_rightBottom.Y - _topLeft.Y),
-                StrokeThickness = _strokeThickness,
-                Stroke = _brush,
-                StrokeDashArray = new DoubleCollection(_strokeDashArray)
+                Width = Math.Abs(_rightBottom.X - _leftTop.X),
+                Height = Math.Abs(_rightBottom.Y - _leftTop.Y),
+                StrokeThickness = Thickness,
+                Stroke = Brush,
+                StrokeDashArray = new DoubleCollection(StrokeDash)
             };
-            Canvas.SetLeft(item, Math.Min(_topLeft.X, _rightBottom.X));
-            Canvas.SetTop(item, Math.Min(_topLeft.Y, _rightBottom.Y));
+            Canvas.SetLeft(item, Math.Min(_leftTop.X, _rightBottom.X));
+            Canvas.SetTop(item, Math.Min(_leftTop.Y, _rightBottom.Y));
+            double width = Math.Abs(_rightBottom.X - _leftTop.X);
+            double height = Math.Abs(_rightBottom.Y - _leftTop.Y);
+            RotateTransform transform = new RotateTransform(this._rotateAngle);
+            transform.CenterX = width * 1.0 / 2;
+            transform.CenterY = height * 1.0 / 2;
+
+            item.RenderTransform = transform;
             return item;
         }
     }
