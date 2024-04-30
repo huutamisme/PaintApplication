@@ -26,6 +26,11 @@ namespace Main
         {
             return false;
         }
+        public double xleftTop { get; set; }
+        public double yleftTop { get; set; }
+
+        public double xRightBottom { get; set; }
+        public double yRightBottom { get; set; }
 
         // start drag
         public void HandleStart(double x, double y)

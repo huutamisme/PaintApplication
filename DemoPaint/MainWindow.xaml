@@ -618,17 +618,17 @@
                     <MenuItem x:Name="editMenuItem" Tag="Edit" Style="{StaticResource MenuItemCustomStyle}" Click="MenuItem_Click">
                         <MenuItem.ContextMenu>
                             <ContextMenu Placement="Bottom" PlacementTarget="{Binding ElementName=editMenuItem}" HorizontalOffset="60" VerticalOffset="70">
-                                <MenuItem Header="Cut" InputGestureText="Ctrl+X" Style="{StaticResource menuItemStyle}">
+                                <MenuItem Header="Cut" InputGestureText="Ctrl+X" Style="{StaticResource menuItemStyle}" Click="Cut_Click">
                                     <MenuItem.Icon>
                                         <materialDesign:PackIcon Kind="Scissors"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="Copy" InputGestureText="Ctrl+C" Style="{StaticResource menuItemStyle}">
+                                <MenuItem Header="Copy" InputGestureText="Ctrl+C" Style="{StaticResource menuItemStyle}" Click="Copy_Click">
                                     <MenuItem.Icon>
                                         <materialDesign:PackIcon Kind="ContentCopy"/>
                                     </MenuItem.Icon>
                                 </MenuItem>
-                                <MenuItem Header="Paste" InputGestureText="Ctrl+V" Style="{StaticResource menuItemStyle}">
+                                <MenuItem Header="Paste" InputGestureText="Ctrl+V" Style="{StaticResource menuItemStyle}" Click="Paste_Click">
                                     <MenuItem.Icon>
                                         <materialDesign:PackIcon Kind="ContentPaste"/>
                                     </MenuItem.Icon>

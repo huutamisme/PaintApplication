@@ -14,14 +14,24 @@ namespace MyRectangle
         public string Name => "Rectangle";
         public string Icon => "Images/pentagon.png";
 
+        public double xleftTop { get; set; }
+        public double yleftTop { get; set; }
+
+        public double xRightBottom { get; set; }
+        public double yRightBottom { get; set; }
+
         public void HandleEnd(double x, double y)
         {
+            xRightBottom = x;
+            yRightBottom = y;
             _rightBottom.X = x;
             _rightBottom.Y = y;
         }
 
         public void HandleStart(double x, double y)
         {
+            xleftTop = x;
+            yleftTop = y;
             _leftTop.X = x;
             _leftTop.Y = y;
         }
@@ -34,6 +44,10 @@ namespace MyRectangle
             temp.RightBottom = this._rightBottom.deepCopy();
             temp._rotateAngle = this._rotateAngle;
             temp.Thickness = this.Thickness;
+            temp.xleftTop = this.xleftTop;
+            temp.xRightBottom = this.xRightBottom;
+            temp.yleftTop = this.yleftTop;
+            temp.yRightBottom = this.yRightBottom;
 
             if (this.Brush != null)
                 temp.Brush = this.Brush.Clone();

@@ -88,7 +88,8 @@ namespace DemoPaint
         int textFontSize;
 
         // memory
-
+        private IShape copiedShape = null;
+        private IShape cutShape = null;
         private List<IShape> _chosedShapes = new List<IShape>();
 
         List<UIElement> _list = new List<UIElement>();
@@ -877,6 +878,18 @@ namespace DemoPaint
             {
                 Load();
             }
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown((Key)Key.C))
+            {
+                handleCopy();
+            }
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown((Key)Key.V))
+            {
+                handleCut();
+            }
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown((Key)Key.V))
+            {
+                handlePaste();
+            }
         }
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
@@ -1216,6 +1229,96 @@ namespace DemoPaint
             }
             if (!this._isEdit)
                 this._chosedShapes.Clear();
+        }
+
+        private void Paste_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void handlePaste()
+        {
+            if (copiedShape == null && cutShape == null)
+            {
+                return;
+            }
+            // handle patse for copy
+            if (copiedShape != null)
+            {
+                var point = System.Windows.Forms.Control.MousePosition;
+                IShape temp = copiedShape.Clone();
+
+                var width = temp.xRightBottom - temp.xleftTop;
+                var height = temp.yleftTop - temp.yRightBottom;
+                temp.HandleStart(point.X, point.Y - 195);
+                temp.HandleEnd(point.X + width, point.Y + height - 195);
+                selectedPainter.Push(temp.Clone());
+                _allPainter.Add(temp.Clone());
+                _undoStack.Push(temp.Clone());
+                _redoStack.Clear();
+
+                RedrawCanvas();
+            }
+            // handle paste for cut
+            else
+            {
+                var point = System.Windows.Forms.Control.MousePosition;
+                IShape temp = cutShape.Clone();
+
+                _allPainter.Remove(cutShape);
+
+                // remove element from stack
+                List<object> tempList = selectedPainter.ToList();
+
+                tempList.Remove(cutShape);
+
+                selectedPainter = new Stack<object>(tempList);
+
+
+                var width = temp.xRightBottom - temp.xleftTop;
+                var height = temp.yleftTop - temp.yRightBottom;
+                temp.HandleStart(point.X, point.Y - 195);
+                temp.HandleEnd(point.X + width, point.Y + height - 195);
+                selectedPainter.Push(temp.Clone());
+                _allPainter.Add(temp.Clone());
+                _undoStack.Push(temp.Clone());
+                _redoStack.Clear();
+
+                cutShape = null;
+                // trigger isEdit = false
+                _isEdit = false;
+                RedrawCanvas();
+            }
+
+        }
+
+        private void Cut_Click(object sender, RoutedEventArgs e)
+        {
+            handleCut();
+        }
+        private void handleCut()
+        {
+            if (_chosedShapes.Count != 1)
+            {
+                return;
+            }
+            copiedShape = null;
+            cutShape = _chosedShapes[0];
+
+        }
+ 
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            handleCopy();
+        }
+        private void handleCopy()
+        {
+            if (_chosedShapes.Count != 1)
+            {
+                return;
+            }
+            cutShape = null;
+            copiedShape = _chosedShapes[0];
         }
     }
 }
