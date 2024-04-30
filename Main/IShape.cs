@@ -11,6 +11,12 @@ namespace Main
         SolidColorBrush Brush { get; set; }
         int Thickness { get; set; }
 
+        double xleftTop { get; set; }
+        double yleftTop { get; set; }
+
+        double xRightBottom { get; set; }
+        double yRightBottom { get; set; }
+
         DoubleCollection StrokeDash { get; set; }
 
         void HandleStart(double x, double y);
