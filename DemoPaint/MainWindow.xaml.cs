@@ -1359,6 +1359,7 @@ namespace DemoPaint
                 cutShape = null;
                 // trigger isEdit = false
                 IsEdit = false;
+                this.Cursor = null;
                 RedrawCanvas();
             }
 
