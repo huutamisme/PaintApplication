@@ -543,9 +543,9 @@ namespace DemoPaint
                 {
                     _end = new Point(_start.X + (_end.Y - _start.Y), _start.Y + (_end.Y - _start.Y));
                 }
-                //_painter.Brush = ChosenColor;
-                //_painter.StrokeDash = _strokeType;
-                //_painter.Thickness = _strokeThickness;
+                _painter.Brush = ChosenColor;
+                _painter.StrokeDash = _strokeType;
+                _painter.Thickness = _strokeThickness;
                 _painter.HandleStart(_start.X, _start.Y);
                 _painter.HandleEnd(_end.X, _end.Y);
                 selectedLayer.Children.Add(_painter.Draw(_strokeThickness, _strokeType, ChosenColor));
