@@ -16,13 +16,14 @@ using Main;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using Microsoft.VisualBasic.Logging;
 using System.Runtime.Intrinsics.X86;
+using System.ComponentModel;
 
 namespace DemoPaint
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
 
         public MainWindow()
@@ -54,11 +55,15 @@ namespace DemoPaint
             _redoStack = _redoStacksLayer[0];
 
             _isDrawing = false;
-            _isTextFormatChosen = false;
+            IsTextFormatChosen = false;
+            IsLayerBtnClicked = false;
+            IsEdit = false;
+            IsSelectArea = false;
             _isTexting = false;
             _isChosenColorClicked = true;
             _isBackgroundColorClicked = false;
             _isBackgrounFillCheckBox = false;
+            _isLayerBtnClicked = false;
 
             DataContext = this;
         }
@@ -75,7 +80,6 @@ namespace DemoPaint
         Stack<object> _undoStack = new Stack<object>(); // mảng undo trong 1 Layer
         Stack<object> _redoStack = new Stack<object>(); // mảng redo trong 1 Layer
         bool _isDrawing;
-        bool _isTextFormatChosen;
         bool _isTexting;
         bool _isChosenColorClicked;
         bool _isBackgroundColorClicked;
@@ -86,6 +90,65 @@ namespace DemoPaint
         DoubleCollection _strokeType;
         String textFontStyle;
         int textFontSize;
+
+        #region biến binding
+
+        private bool _isLayerBtnClicked;
+
+        public bool IsLayerBtnClicked
+        {
+            get { return _isLayerBtnClicked; }
+            set
+            {
+                _isLayerBtnClicked = value;
+                OnPropertyChanged(nameof(IsLayerBtnClicked));
+            }
+        }
+
+
+        private bool _isTextFormatChosen;
+
+        public bool IsTextFormatChosen
+        {
+            get { return _isTextFormatChosen; }
+            set
+            {
+                _isTextFormatChosen = value;
+                OnPropertyChanged(nameof(IsTextFormatChosen));
+            }
+        }
+
+        private bool _isEdit;
+
+        public bool IsEdit
+        {
+            get { return _isEdit; }
+            set
+            {
+                _isEdit = value;
+                OnPropertyChanged(nameof(IsEdit));
+            }
+        }
+
+        private bool _isSelectArea;
+        public bool IsSelectArea
+        {
+            get { return _isSelectArea; }
+            set
+            {
+                _isSelectArea = value;
+                OnPropertyChanged(nameof(IsSelectArea));
+            }
+        }    
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        #endregion
 
         // memory
         private IShape copiedShape = null;
@@ -99,7 +162,6 @@ namespace DemoPaint
         IShape _painter = null;
 
         // for editing
-        private Boolean _isEdit = false;
         private double editPreviousX = -1;
         private double editPreviousY = -1;
         private List<ControlPoint> _controlPoints = new List<ControlPoint>();
@@ -212,10 +274,10 @@ namespace DemoPaint
 
         private void Control_Click(object sender, RoutedEventArgs e)
         {
-            if(_isTextFormatChosen)
+            if(IsLayerBtnClicked)
             {
                 _isTexting = false;
-                _isTextFormatChosen = false;
+                IsLayerBtnClicked = false;
                 textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
             }    
             IShape item = (IShape)(sender as Button)!.Tag;
@@ -224,7 +286,7 @@ namespace DemoPaint
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_isTextFormatChosen)
+            if (IsLayerBtnClicked)
             {
                 _isTexting = true;
                 _isDrawing = false;
@@ -298,7 +360,7 @@ namespace DemoPaint
                     Mouse.OverrideCursor = null;
                 }
             }
-            if (this._isEdit)
+            if (this.IsEdit)
             {
                 if (_chosedShapes.Count < 1)
                     return;
@@ -559,9 +621,9 @@ namespace DemoPaint
                 _end = e.GetPosition(selectedLayer);
                 selectedLayer.Children.Clear();
                 RedrawCanvas();
-                //_painter.Brush = ChosenColor;
-                //_painter.StrokeDash = _strokeType;
-                //_painter.Thickness = _strokeThickness;
+                _painter.Brush = Brushes.Black;
+                _painter.StrokeDash = new DoubleCollection { 4, 4 };
+                _painter.Thickness = 1;
                 _painter.HandleStart(_start.X, _start.Y);
                 _painter.HandleEnd(_end.X, _end.Y);
                 selectedLayer.Children.Add(_painter.Draw(1, new  DoubleCollection { 4, 4 }, Brushes.Black));
@@ -581,7 +643,7 @@ namespace DemoPaint
             if (this._prototypes.Count == 0)
                 return;
             _isDrawing = false;
-            if (this._isEdit)
+            if (this.IsEdit)
             {
                 if (e.ChangedButton != MouseButton.Left)
                     return;
@@ -719,12 +781,15 @@ namespace DemoPaint
         private void Text_Formatting_Click(object sender, RoutedEventArgs e)
         {
             textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
-            _isTextFormatChosen = !_isTextFormatChosen;
+            IsTextFormatChosen = !IsTextFormatChosen;
+
         }
 
         private void LayerBtn_Click(object sender, RoutedEventArgs e)
         {
             LayersPopup.IsOpen = !LayersPopup.IsOpen;
+            IsLayerBtnClicked = !IsLayerBtnClicked;
+            Debug.WriteLine(IsLayerBtnClicked);
         }
 
         private void ColorButton_Click(object sender, RoutedEventArgs e)
@@ -755,7 +820,7 @@ namespace DemoPaint
             }
         }
 
-        private void SaveBtn_Click(object sender, RoutedEventArgs e)
+        private void SaveBtn_Click(object sender, RoutedEventArgs e)    
         {
             Save();
         }
@@ -1047,7 +1112,7 @@ namespace DemoPaint
             }
 
 
-            if (_isEdit && _chosedShapes.Count > 0)
+            if (IsEdit && _chosedShapes.Count > 0)
             {
                 _chosedShapes.ForEach(shape =>
                 {
@@ -1131,11 +1196,15 @@ namespace DemoPaint
             _redoStacksLayer.Add(new Stack<object>());
             _redoStack = _redoStacksLayer[0];
 
-            _isTextFormatChosen = false;
+            IsLayerBtnClicked = false;
+            IsEdit = false;
+            IsTextFormatChosen = false;
+            IsSelectArea = false;
             _isTexting = false;
             _isChosenColorClicked = true;
             _isBackgroundColorClicked = false;
             _isBackgrounFillCheckBox = false;
+            _isLayerBtnClicked = false;
 
             StrokeTypeCB.SelectedIndex = 0;
             StrokeThicknessCB.SelectedIndex = 0;
@@ -1216,10 +1285,10 @@ namespace DemoPaint
 
         #endregion
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void EditShapeBtn_Click(object sender, RoutedEventArgs e)
         {
-            this._isEdit = !this._isEdit;
-            if (_isEdit)
+            this.IsEdit = !this.IsEdit;
+            if (IsEdit)
             {
                 this.Cursor = System.Windows.Input.Cursors.Hand;
             }
@@ -1227,10 +1296,12 @@ namespace DemoPaint
             {
                 this.Cursor = System.Windows.Input.Cursors.Arrow;
             }
-            if (!this._isEdit)
+            if (!this.IsEdit)
                 this._chosedShapes.Clear();
         }
-
+        private void SelectAreaBtn_Click(object sender, RoutedEventArgs e)
+        {
+            IsSelectArea = !IsSelectArea;
         private void Paste_Click(object sender, RoutedEventArgs e)
         {
             
