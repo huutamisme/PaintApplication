@@ -55,8 +55,10 @@ namespace DemoPaint
             _redoStack = _redoStacksLayer[0];
 
             _isDrawing = false;
+            IsTextFormatChosen = false;
             IsLayerBtnClicked = false;
             IsEdit = false;
+            IsSelectArea = false;
             _isTexting = false;
             _isChosenColorClicked = true;
             _isBackgroundColorClicked = false;
@@ -128,6 +130,16 @@ namespace DemoPaint
             }
         }
 
+        private bool _isSelectArea;
+        public bool IsSelectArea
+        {
+            get { return _isSelectArea; }
+            set
+            {
+                _isSelectArea = value;
+                OnPropertyChanged(nameof(IsSelectArea));
+            }
+        }    
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -768,7 +780,7 @@ namespace DemoPaint
         private void Text_Formatting_Click(object sender, RoutedEventArgs e)
         {
             textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
-            IsTextFormatChosen = !IsLayerBtnClicked;
+            IsTextFormatChosen = !IsTextFormatChosen;
 
         }
 
@@ -1174,6 +1186,7 @@ namespace DemoPaint
             IsLayerBtnClicked = false;
             IsEdit = false;
             IsTextFormatChosen = false;
+            IsSelectArea = false;
             _isTexting = false;
             _isChosenColorClicked = true;
             _isBackgroundColorClicked = false;
@@ -1272,6 +1285,11 @@ namespace DemoPaint
             }
             if (!this.IsEdit)
                 this._chosedShapes.Clear();
+        }
+
+        private void SelectAreaBtn_Click(object sender, RoutedEventArgs e)
+        {
+            IsSelectArea = !IsSelectArea;
         }
     }
 }

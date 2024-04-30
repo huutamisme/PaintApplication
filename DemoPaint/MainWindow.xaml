@@ -137,6 +137,33 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="ToolbarSelectAreaBtn" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="SelectAreaBtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                            <materialDesign:PackIcon x:Name="icon" Kind="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsSelectArea}" Value="True">
+                                <Setter TargetName="SelectAreaBtnBorder" Property="BorderBrush" Value="#A57BAC"/>
+                                <Setter TargetName="SelectAreaBtnBorder" Property="BorderThickness" Value="1"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="ToolbarAddTextBtn" TargetType="Button">
             <Setter Property="Height" Value="45"/>
             <Setter Property="Width" Value="45"/>
@@ -747,7 +774,7 @@
                     <RowDefinition Height="30*"/>
                 </Grid.RowDefinitions>
 
-                <Button Style="{StaticResource ToolbarLayerBtn}" Tag="select" Foreground="White"/>
+                <Button Style="{StaticResource ToolbarSelectAreaBtn}" Tag="select" Foreground="White" Click="SelectAreaBtn_Click"/>
                 <Label Grid.Row="1" Content="Selection" Foreground="White" HorizontalAlignment="Center"/>
             </Grid>
 
