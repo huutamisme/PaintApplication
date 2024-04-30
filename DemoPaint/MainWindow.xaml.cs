@@ -588,6 +588,10 @@ namespace DemoPaint
                 Point curPosition = e.GetPosition(selectedLayer);
                 foreach (var item in selectedPainter)
                 {
+                    if(item is TextBlock)
+                    {
+                        return;
+                    }    
                     CShape temp = (CShape)item;
                     if (temp.isHovering(curPosition.X, curPosition.Y))
                     {
