@@ -1302,6 +1302,7 @@ namespace DemoPaint
         private void SelectAreaBtn_Click(object sender, RoutedEventArgs e)
         {
             IsSelectArea = !IsSelectArea;
+        }
         private void Paste_Click(object sender, RoutedEventArgs e)
         {
             
@@ -1357,7 +1358,7 @@ namespace DemoPaint
 
                 cutShape = null;
                 // trigger isEdit = false
-                _isEdit = false;
+                IsEdit = false;
                 RedrawCanvas();
             }
 
