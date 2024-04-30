@@ -655,6 +655,8 @@ namespace DemoPaint
                 selectedLayer.Children.Add(textBox);
 
                 textBox.Focus();
+
+                return;
             }
 
             Point pos = e.GetPosition(selectedLayer);
