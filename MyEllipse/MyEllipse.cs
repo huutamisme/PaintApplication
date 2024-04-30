@@ -53,8 +53,8 @@ namespace MyEllipse
             {   // TODO: end luon luon lon hon start
                 Width = Math.Abs(_rightBottom.X - _leftTop.X),
                 Height = Math.Abs(_rightBottom.Y - LeftTop.Y),
-                StrokeThickness = Thickness,
-                Stroke = Brush,
+                StrokeThickness = strokeThickness,
+                Stroke = solidcolorbrush,
                 StrokeDashArray = new DoubleCollection(StrokeDash)
             };
             Canvas.SetLeft(item, Math.Min(_leftTop.X, _rightBottom.X));

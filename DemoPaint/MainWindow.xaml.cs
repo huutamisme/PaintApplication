@@ -227,7 +227,14 @@ namespace DemoPaint
             {
                 _isTexting = true;
                 _isDrawing = false;
-                _painter = _prototypes[6];
+                foreach (var shape in _prototypes)
+                {
+                    if(shape.Name.Equals("Rectangle"))
+                    {
+                        _painter = shape;
+                    }    
+                }
+                _start = e.GetPosition(selectedLayer);
             }
             else
             {
@@ -235,11 +242,9 @@ namespace DemoPaint
                 _isDrawing = true;
                 _start = e.GetPosition(selectedLayer);
                 _isDrawing = true;
-                Point pos = e.GetPosition(selectedLayer);
-                _painter.HandleStart(pos.X, pos.Y);
+               // Point pos = e.GetPosition(selectedLayer);
+                //_painter.HandleStart(_start.X, _start.Y);
             }
-
-
         }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
@@ -538,9 +543,10 @@ namespace DemoPaint
                 {
                     _end = new Point(_start.X + (_end.Y - _start.Y), _start.Y + (_end.Y - _start.Y));
                 }
-                _painter.Brush = ChosenColor;
-                _painter.StrokeDash = _strokeType;
-                _painter.Thickness = _strokeThickness;
+                //_painter.Brush = ChosenColor;
+                //_painter.StrokeDash = _strokeType;
+                //_painter.Thickness = _strokeThickness;
+                _painter.HandleStart(_start.X, _start.Y);
                 _painter.HandleEnd(_end.X, _end.Y);
                 selectedLayer.Children.Add(_painter.Draw(_strokeThickness, _strokeType, ChosenColor));
                 
@@ -552,11 +558,11 @@ namespace DemoPaint
                 _end = e.GetPosition(selectedLayer);
                 selectedLayer.Children.Clear();
                 RedrawCanvas();
-                _painter.Brush = ChosenColor;
-                _painter.StrokeDash = _strokeType;
-                _painter.Thickness = _strokeThickness;
-                _painter.HandleEnd(_end.X, _end.Y);
+                //_painter.Brush = ChosenColor;
+                //_painter.StrokeDash = _strokeType;
+                //_painter.Thickness = _strokeThickness;
                 _painter.HandleStart(_start.X, _start.Y);
+                _painter.HandleEnd(_end.X, _end.Y);
                 selectedLayer.Children.Add(_painter.Draw(1, new  DoubleCollection { 4, 4 }, Brushes.Black));
 
                 UndoBtn.IsEnabled = true;
