@@ -731,6 +731,14 @@ namespace DemoPaint
                         ChosenColor = selectedColor;
                     }
                 }
+                if (_chosedShapes.Count > 0)
+                {
+                    _chosedShapes.ForEach(shape =>
+                    {
+                        shape.Brush = ChosenColor;
+                    });
+                    RedrawCanvas();
+                }
             }
         }
 
@@ -930,6 +938,14 @@ namespace DemoPaint
                 {
                     _strokeThickness = thickness;
                 }
+                if (_chosedShapes.Count > 0)
+                {
+                    _chosedShapes.ForEach(shape =>
+                    {
+                        shape.Thickness = _strokeThickness;
+                    });
+                    RedrawCanvas();
+                }
             }
         }
 
@@ -954,6 +970,14 @@ namespace DemoPaint
                     break;
                 default:
                     break;
+            }
+            if (_chosedShapes.Count > 0)
+            {
+                _chosedShapes.ForEach(shape =>
+                {
+                    shape.StrokeDash = _strokeType;
+                });
+                RedrawCanvas();
             }
         }
 
