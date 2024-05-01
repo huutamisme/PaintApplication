@@ -65,6 +65,7 @@ namespace DemoPaint
             _isBackgrounFillCheckBox = false;
             _isLayerBtnClicked = false;
             fileName = "Untitled - Paint";
+            _isSaved = true;
 
             DataContext = this;
         }
@@ -91,6 +92,7 @@ namespace DemoPaint
         DoubleCollection _strokeType;
         String textFontStyle;
         int textFontSize;
+        bool _isSaved;
 
         #region biến binding
 
@@ -687,6 +689,7 @@ namespace DemoPaint
                             this._chosedShapes.Add((IShape)item);
                         }
                         RedrawCanvas();
+                        _isSaved = false;
                         break;
                     }
                 }
@@ -749,7 +752,7 @@ namespace DemoPaint
             _allPainter.Add((IShape)_painter.Clone());
             _undoStack.Push((IShape)_painter.Clone());
             _redoStack.Clear();
-
+            _isSaved = false;
             RedrawCanvas();
         }
 
@@ -766,7 +769,27 @@ namespace DemoPaint
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            if(_isSaved)
+            {
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                MessageBoxResult result = MessageBox.Show("Do you want to save changes before closing?", "Unsaved Changes", MessageBoxButton.YesNoCancel);
+                switch (result)
+                {
+                    case MessageBoxResult.Yes:
+                        Save();
+                        Application.Current.Shutdown();
+                        break;
+                    case MessageBoxResult.No:
+                        Application.Current.Shutdown();
+                        break;
+                    case MessageBoxResult.Cancel:
+                        break;
+                }
+            }
+            
         }
 
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
@@ -1217,6 +1240,7 @@ namespace DemoPaint
             _isBackgroundColorClicked = false;
             _isBackgrounFillCheckBox = false;
             _isLayerBtnClicked = false;
+            _isSaved = true;
 
             StrokeTypeCB.SelectedIndex = 0;
             StrokeThicknessCB.SelectedIndex = 0;
@@ -1248,6 +1272,7 @@ namespace DemoPaint
                 string path = saveDialog.FileName;
                 File.WriteAllText(path, content);
                 FileName = System.IO.Path.GetFileName(path) + " - Paint";
+                _isSaved = true;
             }
         }
 
