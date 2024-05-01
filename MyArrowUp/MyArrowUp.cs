@@ -66,6 +66,7 @@ namespace MyArrowUp
             double centerX = width / 2;
             double centerY = height / 2;
             double arrowHeight = Math.Abs(_leftTop.Y - _rightBottom.Y) / 2;
+            double arrowWidth = Math.Abs(_leftTop.X - _rightBottom.X) / 2;
 
             Polygon arrow = new Polygon();
             arrow.Stroke = Brush;
@@ -73,12 +74,12 @@ namespace MyArrowUp
             arrow.StrokeDashArray = StrokeDash;
             PointCollection points = new PointCollection();
 
-            points.Add(new Point(centerX - arrowHeight / 2, centerY));
-            points.Add(new Point(centerX - arrowHeight / 4, centerY));
-            points.Add(new Point(centerX - arrowHeight / 4, centerY + arrowHeight));  
-            points.Add(new Point(centerX + arrowHeight / 4, centerY + arrowHeight));
-            points.Add(new Point(centerX + arrowHeight / 4, centerY));
-            points.Add(new Point(centerX + arrowHeight / 2, centerY));
+            points.Add(new Point(centerX - arrowWidth / 2, centerY));
+            points.Add(new Point(centerX - arrowWidth / 4, centerY));
+            points.Add(new Point(centerX - arrowWidth / 4, centerY + arrowHeight));  
+            points.Add(new Point(centerX + arrowWidth / 4, centerY + arrowHeight));
+            points.Add(new Point(centerX + arrowWidth / 4, centerY));
+            points.Add(new Point(centerX + arrowWidth / 2, centerY));
             points.Add(new Point(centerX, centerY - arrowHeight));
 
 

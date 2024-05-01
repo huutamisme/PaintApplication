@@ -58,52 +58,60 @@ namespace MyArrowRight
             return temp;
         }
 
-        public UIElement Draw(int strokeThickness, DoubleCollection strokeDashArray, SolidColorBrush solidcolorbrush)
+        public UIElement Draw(int strokeThickness, DoubleCollection strokeDashArray, SolidColorBrush solidColorBrush)
         {
-            double centerX = (_leftTop.X + _rightBottom.X) / 2;
-            double centerY = (_leftTop.Y + _rightBottom.Y) / 2;
             double width = Math.Abs(_rightBottom.X - _leftTop.X);
             double height = Math.Abs(_rightBottom.Y - _leftTop.Y);
+            double centerX = width / 2;
+            double centerY = height / 2;
             double arrowHeight = Math.Abs(_leftTop.Y - _rightBottom.Y) / 2;
             double arrowWidth = Math.Abs(_leftTop.X - _rightBottom.X) / 2;
 
-            PathFigure arrow = new PathFigure();
-            arrow.StartPoint = new Point(centerX + arrowWidth, centerY);
+            Polygon arrow = new Polygon();
+            arrow.Stroke = solidColorBrush;
+            arrow.StrokeThickness = strokeThickness;
+            arrow.StrokeDashArray = strokeDashArray;
+            PointCollection points = new PointCollection();
 
-            LineSegment line1 = new LineSegment(new Point(centerX, centerY - arrowWidth / 2), true);
-            LineSegment line2 = new LineSegment(new Point(centerX, centerY - arrowWidth / 4), true);
-            LineSegment line3 = new LineSegment(new Point(centerX - arrowWidth, centerY - arrowWidth / 4), true);
-            LineSegment line4 = new LineSegment(new Point(centerX - arrowWidth, centerY + arrowWidth / 4), true);
-            LineSegment line5 = new LineSegment(new Point(centerX, centerY + arrowWidth / 4), true);
-            LineSegment line6 = new LineSegment(new Point(centerX, centerY + arrowWidth / 2), true);
-            LineSegment line7 = new LineSegment(new Point(centerX + arrowWidth, centerY), true);
-
-            arrow.Segments.Add(line1);
-            arrow.Segments.Add(line2);
-            arrow.Segments.Add(line3);
-            arrow.Segments.Add(line4);
-            arrow.Segments.Add(line5);
-            arrow.Segments.Add(line6);
-            arrow.Segments.Add(line7);
-
-            PathGeometry geometry = new PathGeometry();
-            geometry.Figures.Add(arrow);
+            points.Add(new Point(centerX, centerY - arrowHeight / 2));
+            points.Add(new Point(centerX, centerY - arrowHeight / 4));
+            points.Add(new Point(centerX - arrowWidth, centerY - arrowHeight / 4));
+            points.Add(new Point(centerX - arrowWidth, centerY + arrowHeight / 4));
+            points.Add(new Point(centerX, centerY + arrowHeight / 4));
+            points.Add(new Point(centerX, centerY + arrowHeight / 2));
+            points.Add(new Point(centerX + arrowWidth, centerY));
 
 
-            Path path = new Path();
-            path.Data = geometry;
-            path.Stroke = solidcolorbrush;
-            path.StrokeThickness = strokeThickness;
-            path.StrokeDashArray = strokeDashArray;
+            arrow.Points = points;
+
+            if (_rightBottom.X > _leftTop.X && _rightBottom.Y > _leftTop.Y)
+            {
+                Canvas.SetLeft(arrow, _leftTop.X);
+                Canvas.SetTop(arrow, _leftTop.Y);
+            }
+            else if (_rightBottom.X < _leftTop.X && _rightBottom.Y > _leftTop.Y)
+            {
+                Canvas.SetLeft(arrow, _rightBottom.X);
+                Canvas.SetTop(arrow, _leftTop.Y);
+            }
+            else if (_rightBottom.X > _leftTop.X && _rightBottom.Y < _leftTop.Y)
+            {
+                Canvas.SetLeft(arrow, _leftTop.X);
+                Canvas.SetTop(arrow, _rightBottom.Y);
+            }
+            else
+            {
+                Canvas.SetLeft(arrow, _rightBottom.X);
+                Canvas.SetTop(arrow, _rightBottom.Y);
+            }
 
             RotateTransform transform = new RotateTransform(this._rotateAngle);
             transform.CenterX = width * 1.0 / 2;
             transform.CenterY = height * 1.0 / 2;
-            path.RenderTransform = transform;
+            arrow.RenderTransform = transform;
 
-            return path;
+            return arrow;
         }
-
         override public CShape deepCopy()
         {
             MyArrowRight temp = new MyArrowRight();
