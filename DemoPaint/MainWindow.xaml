@@ -634,7 +634,7 @@
 
             <StackPanel Grid.Column="0" Orientation="Horizontal">
                 <Image Source="Images/logo_paint.png" Width="55" Height="55" Margin="-13 -13 0 0"/>
-                <Label Content="Untitled - Paint" Foreground="White" Margin="-20,0,0,0"/>
+                <Label Content="{Binding FileName}" Foreground="White" Margin="-20,0,0,0"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" FlowDirection="RightToLeft">

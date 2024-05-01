@@ -64,6 +64,7 @@ namespace DemoPaint
             _isBackgroundColorClicked = false;
             _isBackgrounFillCheckBox = false;
             _isLayerBtnClicked = false;
+            fileName = "Untitled - Paint";
 
             DataContext = this;
         }
@@ -139,7 +140,18 @@ namespace DemoPaint
                 _isSelectArea = value;
                 OnPropertyChanged(nameof(IsSelectArea));
             }
-        }    
+        }
+
+        private string fileName;
+        public string FileName
+        {
+            get { return fileName; }
+            set
+            {
+                fileName = value;
+                OnPropertyChanged(nameof(FileName));
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -286,7 +298,7 @@ namespace DemoPaint
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (IsLayerBtnClicked)
+            if (IsTextFormatChosen)
             {
                 _isTexting = true;
                 _isDrawing = false;
@@ -984,7 +996,7 @@ namespace DemoPaint
                 selectedLayer.Children.Clear();
                 RedrawCanvas();
 
-                _allPainter.Add((IShape)_painter.Clone());
+                //_allPainter.Add((IShape)_painter.Clone());
 
                 _undoStack.Push(textBlock);
                 _redoStack.Clear();
@@ -1235,6 +1247,7 @@ namespace DemoPaint
             {
                 string path = saveDialog.FileName;
                 File.WriteAllText(path, content);
+                FileName = System.IO.Path.GetFileName(path) + " - Paint";
             }
         }
 
@@ -1246,7 +1259,7 @@ namespace DemoPaint
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string path = dialog.FileName;
-
+                FileName = System.IO.Path.GetFileName(path) + " - Paint";
                 try
                 {
                     string content = File.ReadAllText(path);
