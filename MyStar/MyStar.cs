@@ -60,49 +60,74 @@ namespace MyStar
 
         public UIElement Draw(int strokeThickness, DoubleCollection strokeDashArray, SolidColorBrush solidcolorbrush)
         {
-            double width = Math.Abs(_rightBottom.X - _leftTop.X);
-            double height = Math.Abs(_rightBottom.Y - _leftTop.Y);
-            double centerX = (_leftTop.X + _rightBottom.X) / 2;
-            double centerY = (_leftTop.Y + _rightBottom.Y) / 2;
-            double radius = Math.Min(Math.Abs(_rightBottom.X - centerX), Math.Abs(_rightBottom.Y - centerY));
+            var width = Math.Abs(_rightBottom.X - _leftTop.X);
+            var height = Math.Abs(_rightBottom.Y - _leftTop.Y);
 
-            PathFigure star = new PathFigure();
-            star.StartPoint = new Point(centerX, centerY - radius);
+            var centerX = width / 2;
+            var centerY = height / 2;
 
-            double angle = -Math.PI / 2;
-            double increment = Math.PI / 5;
+            // Create the Polygon
+            Polygon starPolygon = new Polygon();
+            starPolygon.Stroke = Brush;
+            starPolygon.StrokeThickness = Thickness;
 
-            for (int i = 0; i < 10; i++)
+            double angleIncrement = Math.PI / 5;
+
+            PointCollection starPoints = new PointCollection();
+
+            // Tính toán tọa độ của các đỉnh của ngôi sao
+            double halfWidth = width / 2;
+            double halfHeight = height / 2;
+
+            for (int i = 1; i <= 10; i++)
             {
-                LineSegment line = new LineSegment();
-                line.Point = new Point(centerX + radius * Math.Cos(angle), centerY + radius * Math.Sin(angle));
-                star.Segments.Add(line);
-
-                angle += increment;
-
-                line = new LineSegment();
-                line.Point = new Point(centerX + (radius / 2) * Math.Cos(angle), centerY + (radius / 2) * Math.Sin(angle));
-                star.Segments.Add(line);
-
-                angle += increment;
+                double halfWidth1;
+                double halfHeight1;
+                if (i % 2 == 0)
+                {
+                    halfHeight1 = halfHeight;
+                    halfWidth1 = halfWidth;
+                }
+                else
+                {
+                    halfHeight1 = halfHeight / 2;
+                    halfWidth1 = halfWidth / 2;
+                }
+                double angle = angleIncrement * i - Math.PI / 2; // Bắt đầu từ phía trên
+                double x = centerX + halfWidth1 * Math.Cos(angle);
+                double y = centerY + halfHeight1 * Math.Sin(angle);
+                starPoints.Add(new Point(x, y));
             }
-            star.IsClosed = true;
 
-            PathGeometry geometry = new PathGeometry();
-            geometry.Figures.Add(star);
+            starPolygon.Points = starPoints;
 
-            Path path = new Path();
-            path.Data = geometry;
-            path.Stroke = solidcolorbrush;
-            path.StrokeThickness = strokeThickness;
-            path.StrokeDashArray = strokeDashArray;
+            if (_rightBottom.X > _leftTop.X && _rightBottom.Y > _leftTop.Y)
+            {
+                Canvas.SetLeft(starPolygon, _leftTop.X);
+                Canvas.SetTop(starPolygon, _leftTop.Y);
+            }
+            else if (_rightBottom.X < _leftTop.X && _rightBottom.Y > _leftTop.Y)
+            {
+                Canvas.SetLeft(starPolygon, _rightBottom.X);
+                Canvas.SetTop(starPolygon, _leftTop.Y);
+            }
+            else if (_rightBottom.X > _leftTop.X && _rightBottom.Y < _leftTop.Y)
+            {
+                Canvas.SetLeft(starPolygon, _leftTop.X);
+                Canvas.SetTop(starPolygon, _rightBottom.Y);
+            }
+            else
+            {
+                Canvas.SetLeft(starPolygon, _rightBottom.X);
+                Canvas.SetTop(starPolygon, _rightBottom.Y);
+            }
 
             RotateTransform transform = new RotateTransform(this._rotateAngle);
             transform.CenterX = width * 1.0 / 2;
             transform.CenterY = height * 1.0 / 2;
-            path.RenderTransform = transform;
+            starPolygon.RenderTransform = transform;
 
-            return path;
+            return starPolygon;
         }
 
 
