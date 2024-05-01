@@ -1270,8 +1270,8 @@ namespace DemoPaint
                     {
                         var element = shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush);
                         selectedLayer.Children.Add(element);
-                        selectedPainter.Push(element);
-                        _undoStack.Push(element);
+                        selectedPainter.Push(shape);
+                        _undoStack.Push(shape);
                         _redoStack.Clear();
                         UpdateUndoRedoButtonState();
                     }
