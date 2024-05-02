@@ -38,7 +38,7 @@ namespace DemoPaint
             string canvasName = "myCanvas";
             Canvas canvasToAdd = new Canvas();
             canvasToAdd.Name = canvasName;
-            canvasToAdd.Background = Brushes.White;
+            canvasToAdd.Background = Brushes.Transparent;
             Canvas.SetZIndex(canvasToAdd, 0);
             Layers.Add(canvasName);
             DrawArea.Children.Add(canvasToAdd);
@@ -288,10 +288,10 @@ namespace DemoPaint
 
         private void Control_Click(object sender, RoutedEventArgs e)
         {
-            if(IsLayerBtnClicked)
+            if(IsTextFormatChosen)
             {
                 _isTexting = false;
-                IsLayerBtnClicked = false;
+                IsTextFormatChosen = false;
                 textFormattingPopup.IsOpen = !textFormattingPopup.IsOpen;
             }    
             IShape item = (IShape)(sender as Button)!.Tag;
@@ -824,7 +824,6 @@ namespace DemoPaint
         {
             LayersPopup.IsOpen = !LayersPopup.IsOpen;
             IsLayerBtnClicked = !IsLayerBtnClicked;
-            Debug.WriteLine(IsLayerBtnClicked);
         }
 
         private void ColorButton_Click(object sender, RoutedEventArgs e)
@@ -903,18 +902,17 @@ namespace DemoPaint
 
         private void AddLayerBtn_Click(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine(Layers.Count);
             string canvasName = "myLayer" + Layers.Count().ToString();
 
             Canvas canvasToAdd = new Canvas();
             canvasToAdd.Name = canvasName;
-            Canvas.SetZIndex(canvasToAdd, Layers.Count() - 1);
+            Canvas.SetZIndex(canvasToAdd, Layers.Count());
             canvasToAdd.Background = Brushes.Transparent;
 
             Layers.Insert(0, canvasName);
             _paintersLayer.Insert(0, new Stack<object>());
             DrawArea.Children.Add(canvasToAdd);
-            Canvas.SetZIndex(tempCanvas, Layers.Count() + 1);
+            Canvas.SetZIndex(tempCanvas, Layers.Count());
 
             _undoStacksLayer.Insert(0, new Stack<object>());
             _redoStacksLayer.Insert(0, new Stack<object>());
@@ -1129,23 +1127,28 @@ namespace DemoPaint
 
         private void RedrawCanvas()
         {
-            selectedLayer.Children.Clear();
-            foreach (var item in selectedPainter.Reverse())
+            for(int i = 0; i < Layers.Count; i++)
             {
-                if (item is IShape shape)
+                Canvas tempCanvas = FindCanvasByName(Layers[i]);
+                Canvas.SetZIndex(tempCanvas, Layers.Count - i - 1);
+                tempCanvas.Children.Clear();
+                Stack<object> tempSelectedPainter = _paintersLayer[i];
+                foreach (var item in tempSelectedPainter.Reverse())
                 {
-                    selectedLayer.Children.Add(shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush));
+                    if (item is IShape shape)
+                    {
+                        tempCanvas.Children.Add(shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush));
+                    }
+                    else if (item is TextBlock textBlock)
+                    {
+                        tempCanvas.Children.Add(textBlock);
+                    }
+                    else if (item is UIElement uIElement)
+                    {
+                        tempCanvas.Children.Add(uIElement);
+                    }
                 }
-                else if (item is TextBlock textBlock)
-                {
-                    selectedLayer.Children.Add(textBlock);
-                }
-                else if (item is UIElement uIElement)
-                {
-                    selectedLayer.Children.Add(uIElement);
-                }
-            }
-
+            }    
 
             if (IsEdit && _chosedShapes.Count > 0)
             {
@@ -1206,7 +1209,7 @@ namespace DemoPaint
             string canvasName = "myCanvas";
             Canvas canvasToAdd = new Canvas();
             canvasToAdd.Name = canvasName;
-            canvasToAdd.Background = Brushes.White;
+            canvasToAdd.Background = Brushes.Transparent;
             Canvas.SetZIndex(canvasToAdd, 0);
             Layers.Add(canvasName);
             DrawArea.Children.Add(canvasToAdd);
@@ -1257,6 +1260,15 @@ namespace DemoPaint
                 TypeNameHandling = TypeNameHandling.Objects
             };
 
+            _allPainter = new List<IShape>();
+            for (int i = 0; i < _paintersLayer.Count; i++)
+            {
+                Stack<object> temp = _paintersLayer[i];
+                foreach (var item in temp)
+                {
+                    _allPainter.Add((IShape)item);
+                }    
+            }    
             var serializeShapeList = JsonConvert.SerializeObject(_allPainter, settings);
 
             StringBuilder builder = new StringBuilder();
@@ -1308,7 +1320,14 @@ namespace DemoPaint
                     {
                         var element = shape.Draw(shape.Thickness, shape.StrokeDash, shape.Brush);
                         selectedLayer.Children.Add(element);
-                        selectedPainter.Push(shape);
+                        if(shape is IShape)
+                        {
+                            selectedPainter.Push((IShape)shape);
+                        }
+                        else
+                        {
+                            selectedPainter.Push(shape);
+                        }
                         _undoStack.Push(shape);
                         _redoStack.Clear();
                         UpdateUndoRedoButtonState();
@@ -1431,5 +1450,87 @@ namespace DemoPaint
             cutShape = null;
             copiedShape = _chosedShapes[0];
         }
+
+        private void DeleteLayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Layers.Count > 1)
+            {
+                int selectedIndex = LayerListBox.SelectedIndex;
+                string layerToDelete = Layers[selectedIndex];
+
+                Layers.RemoveAt(selectedIndex);
+                _paintersLayer.RemoveAt(selectedIndex);
+                _undoStacksLayer.RemoveAt(selectedIndex);
+                _redoStacksLayer.RemoveAt(selectedIndex);
+
+                DrawArea.Children.Remove(FindCanvasByName(layerToDelete));
+
+                if (selectedIndex > 0)
+                    LayerListBox.SelectedIndex = selectedIndex - 1;
+                else
+                    LayerListBox.SelectedIndex = selectedIndex;
+            }
+        }
+
+        private void LayerMoveUpBtn_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedIndex = LayerListBox.SelectedIndex;
+            if (selectedIndex > 0)
+            {
+                string tempSelectedLayer = Layers[selectedIndex];
+                Layers[selectedIndex] = Layers[selectedIndex - 1];
+                Layers[selectedIndex - 1] = tempSelectedLayer;
+
+                Stack<object> tempSelectedPainter = _paintersLayer[selectedIndex];
+                _paintersLayer[selectedIndex] = _paintersLayer[selectedIndex - 1];
+                _paintersLayer[selectedIndex - 1] = tempSelectedPainter;
+
+                Stack<object> tempUndoStack = _undoStacksLayer[selectedIndex];
+                _undoStacksLayer[selectedIndex] = _undoStacksLayer[selectedIndex - 1];
+                _undoStacksLayer[selectedIndex - 1] = tempUndoStack;
+
+                Stack<object> tempRedoStack = _redoStacksLayer[selectedIndex];
+                _redoStacksLayer[selectedIndex] = _redoStacksLayer[selectedIndex - 1];
+                _redoStacksLayer[selectedIndex - 1] = tempRedoStack;
+
+
+                Canvas.SetZIndex(FindCanvasByName(tempSelectedLayer), Layers.Count - selectedIndex);
+                Canvas.SetZIndex(FindCanvasByName(Layers[selectedIndex - 1]), Layers.Count - selectedIndex - 1);
+
+                LayerListBox.SelectedIndex = selectedIndex - 1;
+                RedrawCanvas();
+            }
+        }
+
+        private void LayerMoveDownBtn_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedIndex = LayerListBox.SelectedIndex;
+            if (selectedIndex < Layers.Count - 1 && selectedIndex != -1)
+            {
+                string tempSelectedLayer = Layers[selectedIndex];
+                Layers[selectedIndex] = Layers[selectedIndex + 1];
+                Layers[selectedIndex + 1] = tempSelectedLayer;
+
+                Stack<object> tempSelectedPainter = _paintersLayer[selectedIndex];
+                _paintersLayer[selectedIndex] = _paintersLayer[selectedIndex + 1];
+                _paintersLayer[selectedIndex + 1] = tempSelectedPainter;
+
+                Stack<object> tempUndoStack = _undoStacksLayer[selectedIndex];
+                _undoStacksLayer[selectedIndex] = _undoStacksLayer[selectedIndex + 1];
+                _undoStacksLayer[selectedIndex + 1] = tempUndoStack;
+
+                Stack<object> tempRedoStack = _redoStacksLayer[selectedIndex];
+                _redoStacksLayer[selectedIndex] = _redoStacksLayer[selectedIndex + 1];
+                _redoStacksLayer[selectedIndex + 1] = tempRedoStack;
+
+
+                Canvas.SetZIndex(FindCanvasByName(tempSelectedLayer), Layers.Count - selectedIndex - 1);
+                Canvas.SetZIndex(FindCanvasByName(Layers[selectedIndex + 1]), Layers.Count - selectedIndex);
+
+                LayerListBox.SelectedIndex = selectedIndex + 1;
+                RedrawCanvas();
+            }
+        }
+
     }
 }
