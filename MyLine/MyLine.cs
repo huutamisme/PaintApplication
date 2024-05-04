@@ -8,6 +8,8 @@ namespace MyLine
 {
     public class MyLine : CShape, IShape
     {
+        public Double RotateAngle { get; set; }
+
         public SolidColorBrush Brush { get; set; }
         public int Thickness { get; set; }
         public DoubleCollection StrokeDash { get; set; }
@@ -62,7 +64,7 @@ namespace MyLine
         {
             double width = Math.Abs(_rightBottom.X - _leftTop.X);
             double height = Math.Abs(_rightBottom.Y - _leftTop.Y);
-            RotateTransform transform = new RotateTransform(this._rotateAngle);
+            RotateTransform transform = new RotateTransform(RotateAngle);
             transform.CenterX = width * 1.0 / 2;
             transform.CenterY = height * 1.0 / 2;
             return new Line()

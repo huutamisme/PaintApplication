@@ -11,6 +11,8 @@ namespace Main
         SolidColorBrush Brush { get; set; }
         int Thickness { get; set; }
 
+        Double RotateAngle { get; set; }
+
         double xleftTop { get; set; }
         double yleftTop { get; set; }
 

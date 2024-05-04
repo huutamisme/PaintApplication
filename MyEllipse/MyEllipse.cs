@@ -11,6 +11,7 @@ namespace MyEllipse
 {
     public class MyEllipse : CShape, IShape
     {
+        public Double RotateAngle { get; set; }
         public SolidColorBrush Brush { get; set; }
         public int Thickness { get; set; }
         public DoubleCollection StrokeDash { get; set; }
@@ -74,7 +75,7 @@ namespace MyEllipse
             Canvas.SetLeft(item, Math.Min(_leftTop.X, _rightBottom.X));
             Canvas.SetTop(item, Math.Min(_leftTop.Y, _rightBottom.Y));
             Trace.WriteLine("Here" + getRotateAngle());
-            RotateTransform transform = new RotateTransform(this._rotateAngle);
+            RotateTransform transform = new RotateTransform(RotateAngle);
             transform.CenterX = width * 1.0 / 2;
             transform.CenterY = height * 1.0 / 2;
 
