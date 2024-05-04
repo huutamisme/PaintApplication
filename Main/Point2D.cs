@@ -13,6 +13,7 @@ namespace Main
     {
         public double X { get; set; }
         public double Y { get; set; }
+        public Double RotateAngle { get; set; }
 
         public string Icon { get; } // logo tuong ung voi icon
 

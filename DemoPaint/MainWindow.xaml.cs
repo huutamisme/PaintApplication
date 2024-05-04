@@ -333,9 +333,8 @@ namespace DemoPaint
                 Point currentPosition = e.GetPosition(selectedLayer);
                 for (int i = 0; i < _controlPoints.Count; i++)
                 {
-                    if (_controlPoints[i].isHovering(Cshape.getRotateAngle(), currentPosition.X, currentPosition.Y))
+                    if (_controlPoints[i].isHovering(_chosedShapes[0].RotateAngle != null ? _chosedShapes[0].RotateAngle : Cshape.getRotateAngle(), currentPosition.X, currentPosition.Y))
                     {
-                        // xác định hướng mà con trỏ chuột sẽ mở rộng từ đỉnh đó để thể hiện hướng
                         switch (_controlPoints[i].getEdge(Cshape.getRotateAngle()))
                         {
                             case "topleft" or "bottomright":
@@ -412,6 +411,10 @@ namespace DemoPaint
                 else
                 {
                     CShape shape = (CShape)_chosedShapes[0];
+                    if (_chosedShapes[0].RotateAngle != null)
+                    {
+                        shape.setRotateAngle(_chosedShapes[0].RotateAngle);
+                    }
                     _controlPoints.ForEach(ctrlPoint =>
                     {
                         List<cord> edges = new List<cord>()
@@ -496,11 +499,13 @@ namespace DemoPaint
                                         {
                                             Trace.WriteLine("The shape" + shape.getRotateAngle());
                                             shape.setRotateAngle(shape.getRotateAngle() - alpha * RotateFactor);
+                                            _chosedShapes[0].RotateAngle = shape.getRotateAngle() - alpha * RotateFactor;
                                         }
                                         else
                                         {
                                             Trace.WriteLine("The shape" + shape.getRotateAngle());
                                             shape.setRotateAngle(shape.getRotateAngle() + alpha * RotateFactor);
+                                            _chosedShapes[0].RotateAngle = shape.getRotateAngle() + alpha * RotateFactor;
                                         }
                                         break;
                                     }
@@ -748,9 +753,10 @@ namespace DemoPaint
             _painter.Brush = ChosenColor;
             _painter.Thickness = _strokeThickness;
             _painter.StrokeDash = _strokeType;
-            selectedPainter.Push((IShape)_painter.Clone());
-            _allPainter.Add((IShape)_painter.Clone());
-            _undoStack.Push((IShape)_painter.Clone());
+            IShape cloned = _painter.Clone();
+            selectedPainter.Push(cloned);
+            _allPainter.Add(cloned);
+            _undoStack.Push(cloned);
             _redoStack.Clear();
             _isSaved = false;
             RedrawCanvas();
@@ -1155,6 +1161,7 @@ namespace DemoPaint
                 _chosedShapes.ForEach(shape =>
                 {
                     CShape cShape = (CShape)shape;
+                    cShape.setRotateAngle(shape.RotateAngle);
                     selectedLayer.Children.Add(cShape.controlOutline());
                     Trace.WriteLine(cShape.getRotateAngle());
                     if (_chosedShapes.Count == 1)
@@ -1163,7 +1170,7 @@ namespace DemoPaint
                         this._controlPoints = controlPoints;
                         controlPoints.ForEach(Ctrl =>
                         {
-                            selectedLayer.Children.Add(Ctrl.drawPoint(cShape.getRotateAngle(), cShape.getCenterPoint()));
+                            selectedLayer.Children.Add(Ctrl.drawPoint(shape.RotateAngle != null ? shape.RotateAngle : cShape.getRotateAngle(), cShape.getCenterPoint()));
                         });
                     }
                 });
@@ -1381,9 +1388,10 @@ namespace DemoPaint
                 var height = temp.yleftTop - temp.yRightBottom;
                 temp.HandleStart(point.X, point.Y - 195);
                 temp.HandleEnd(point.X + width, point.Y + height - 195);
-                selectedPainter.Push(temp.Clone());
-                _allPainter.Add(temp.Clone());
-                _undoStack.Push(temp.Clone());
+                IShape cloned = temp.Clone();
+                selectedPainter.Push(cloned);
+                _allPainter.Add(cloned);
+                _undoStack.Push(cloned);
                 _redoStack.Clear();
 
                 RedrawCanvas();
@@ -1408,9 +1416,10 @@ namespace DemoPaint
                 var height = temp.yleftTop - temp.yRightBottom;
                 temp.HandleStart(point.X, point.Y - 195);
                 temp.HandleEnd(point.X + width, point.Y + height - 195);
-                selectedPainter.Push(temp.Clone());
-                _allPainter.Add(temp.Clone());
-                _undoStack.Push(temp.Clone());
+                IShape cloned = temp.Clone();
+                selectedPainter.Push(cloned);
+                _allPainter.Add(cloned);
+                _undoStack.Push(cloned);
                 _redoStack.Clear();
 
                 cutShape = null;

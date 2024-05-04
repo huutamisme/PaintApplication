@@ -10,6 +10,7 @@ namespace MyArrowUp
 {
     public class MyArrowUp : CShape, IShape
     {
+        public Double RotateAngle { get; set; }
         public SolidColorBrush Brush { get; set; }
         public int Thickness { get; set; }
         public DoubleCollection StrokeDash { get; set; }
@@ -106,7 +107,7 @@ namespace MyArrowUp
                 Canvas.SetTop(arrow, _rightBottom.Y);
             }
 
-            RotateTransform transform = new RotateTransform(this._rotateAngle);
+            RotateTransform transform = new RotateTransform(RotateAngle);
             transform.CenterX = width * 1.0 / 2;
             transform.CenterY = height * 1.0 / 2;
             arrow.RenderTransform = transform;
