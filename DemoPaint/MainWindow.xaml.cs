@@ -1385,6 +1385,17 @@ namespace DemoPaint
             // handle paste for cut
             else
             {
+                int selectedPainterIndex = 0;
+                for (int i = 0; i < Layers.Count; i++)
+                {
+                    if (selectedLayer.Equals(FindCanvasByName(Layers[i])))
+                    {
+                        selectedPainterIndex = i;
+                        break;
+                    }    
+                }    
+
+
                 var point = System.Windows.Forms.Control.MousePosition;
                 IShape temp = cutShape.Clone();
 
@@ -1396,7 +1407,7 @@ namespace DemoPaint
                 tempList.Remove(cutShape);
 
                 selectedPainter = new Stack<object>(tempList);
-
+                _paintersLayer[selectedPainterIndex] = selectedPainter;
 
                 var width = temp.xRightBottom - temp.xleftTop;
                 var height = temp.yleftTop - temp.yRightBottom;
