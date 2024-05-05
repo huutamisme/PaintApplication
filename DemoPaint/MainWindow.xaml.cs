@@ -662,7 +662,11 @@ namespace DemoPaint
                     if(item is TextBlock)
                     {
                         return;
-                    }    
+                    }
+                    if(item is Point2D)
+                    {
+                        continue;
+                    }
                     CShape temp = (CShape)item;
                     if (temp.isHovering(curPosition.X, curPosition.Y))
                     {
