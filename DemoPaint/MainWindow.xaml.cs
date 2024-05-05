@@ -657,12 +657,16 @@ namespace DemoPaint
                     return;
 
                 Point curPosition = e.GetPosition(selectedLayer);
-                foreach (var item in selectedPainter)
+                foreach (var item in _allPainter)
                 {
                     if(item is TextBlock)
                     {
                         return;
-                    }    
+                    }
+                    if(item is Point2D)
+                    {
+                        continue;
+                    }
                     CShape temp = (CShape)item;
                     if (temp.isHovering(curPosition.X, curPosition.Y))
                     {
