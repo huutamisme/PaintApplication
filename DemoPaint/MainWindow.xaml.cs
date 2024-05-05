@@ -1298,6 +1298,10 @@ namespace DemoPaint
                     List<IShape> containers = JsonConvert.DeserializeObject<List<IShape>>(content, settings);
                     foreach (var item in containers)
                     {
+                        if (item is Point2D)
+                        {
+                            continue;
+                        }
                         _allPainter.Add(item);
                     }
 
