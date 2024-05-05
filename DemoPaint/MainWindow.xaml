@@ -788,7 +788,7 @@
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
                     <Button Style="{StaticResource ToolbarEditShapeBtn}" Tag="Pencil" Foreground="{StaticResource color6}" Click="EditShapeBtn_Click"/>
-                    <Button Style="{StaticResource ToolbarLayerBtn}" Tag="Eraser" Foreground="{StaticResource color1}"/>
+                    <!--<Button Style="{StaticResource ToolbarLayerBtn}" Tag="Eraser" Foreground="{StaticResource color1}"/>-->
                     <Popup x:Name="textFormattingPopup" PlacementTarget="{Binding ElementName=ToolBar}" IsOpen="False">
                         <Border Background="Black" BorderBrush="Transparent" BorderThickness="0" CornerRadius="5" Height="40">
                             <Grid>
