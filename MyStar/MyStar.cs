@@ -72,7 +72,7 @@ namespace MyStar
             Polygon starPolygon = new Polygon();
             starPolygon.Stroke = Brush;
             starPolygon.StrokeThickness = Thickness;
-
+            starPolygon.StrokeDashArray = StrokeDash;
             double angleIncrement = Math.PI / 5;
 
             PointCollection starPoints = new PointCollection();
