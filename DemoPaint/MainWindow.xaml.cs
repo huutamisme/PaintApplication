@@ -657,7 +657,7 @@ namespace DemoPaint
                     return;
 
                 Point curPosition = e.GetPosition(selectedLayer);
-                foreach (var item in selectedPainter)
+                foreach (var item in _allPainter)
                 {
                     if(item is TextBlock)
                     {
